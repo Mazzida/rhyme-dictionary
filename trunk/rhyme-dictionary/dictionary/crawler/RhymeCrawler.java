@@ -69,7 +69,7 @@ public abstract class RhymeCrawler {
 		return null;
 	}
 	
-	private void writeEntry(String entry) {
+	private synchronized void writeEntry(String entry) {
 		try {
 			writer.write(entry);
 		} catch (IOException e) {
