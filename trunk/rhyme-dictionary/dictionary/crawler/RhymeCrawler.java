@@ -13,7 +13,7 @@ import java.util.Vector;
 public abstract class RhymeCrawler {
 
 	private static final int THREADCOUNT = 20;
-	private static final String WORD_FILE_NAME = "wordlist_text.txt";
+	private static final String WORD_FILE_NAME = "test.txt";
 	private static final String RHYME_FILE_NAME = "rhyme_text.txt";
 	private BufferedReader reader;
 	private FileWriter writer;
@@ -35,6 +35,7 @@ public abstract class RhymeCrawler {
 			while (runnerList.size() != 0) {
 				Thread.sleep(1500);
 			}
+			writer.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -70,10 +71,12 @@ public abstract class RhymeCrawler {
 	}
 	
 	private synchronized void writeEntry(String entry) {
-		try {
-			writer.write(entry);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (entry != null) {
+			try {
+				writer.write(entry);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -103,7 +106,7 @@ public abstract class RhymeCrawler {
 				}
 				writeEntry(processPageUrl(curWord, contents.toString()));
 			} catch (Exception e) {
-//				System.err.println("ERROR: run()" + e.getLocalizedMessage());
+				System.err.println("ERROR: run()" + e.getLocalizedMessage());
 			}
 
 		}
