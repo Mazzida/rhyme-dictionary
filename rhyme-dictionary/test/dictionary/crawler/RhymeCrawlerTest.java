@@ -17,7 +17,6 @@ public class RhymeCrawlerTest extends TestCase {
 		for (int i = 0; i < match.length(); i ++) {
 			System.out.println(match.charAt(i) + " " + (int) match.charAt(i) );
 		}
-		System.out.println((int)'\'' + "");
 		assertEquals("regex match failure", "'sif-(&-)l&s", match);
 	}
 
