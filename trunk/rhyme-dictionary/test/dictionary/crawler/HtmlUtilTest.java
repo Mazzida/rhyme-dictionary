@@ -15,12 +15,14 @@ public class HtmlUtilTest {
 				"<span class=\"boldface\">dee</span>-<span class=\"boldface\">ey</span>",
 				"",
 				"alpha<kappa>beta<><rhombus>delta",
-				"",
+				"<hi there>",
+				"<>",
 		};
 		String[] testOutputs = new String[]{
 				"dee-ey",
 				"",
 				"alphabetadelta",
+				"",
 				""
 		};
 
@@ -32,5 +34,7 @@ public class HtmlUtilTest {
 			assertEquals("strip tags failure for string #" + i + " : " + input, expOutput, output);
 		}
 	}
+
+	
 
 }
