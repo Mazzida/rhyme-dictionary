@@ -58,7 +58,7 @@ public abstract class RhymeCrawler {
 					return null;
 				} else {
 					readAttempts ++;
-					Thread.sleep(500);
+					Thread.sleep(10);
 				}
 			}
 			if (reader.ready()) {
@@ -73,7 +73,7 @@ public abstract class RhymeCrawler {
 	private synchronized void writeEntry(String entry) {
 		if (entry != null) {
 			try {
-				writer.write(entry);
+				writer.write(entry + '\n');
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -104,7 +104,11 @@ public abstract class RhymeCrawler {
 				while (goal.hasNextLine()) {
 					contents.append(goal.nextLine()).append('\n');
 				}
-				writeEntry(processPageUrl(curWord, contents.toString()));
+				String pronunciation = processPageUrl(curWord, contents.toString());
+				if (pronunciation != null) {
+					String entry = curWord + '\t' + pronunciation;
+					writeEntry(entry);					
+				}
 			} catch (Exception e) {
 				System.err.println("ERROR: run()" + e.getLocalizedMessage());
 			}
