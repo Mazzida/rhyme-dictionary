@@ -7,6 +7,10 @@ import java.util.regex.Pattern;
 
 public class PronunciationEntry {
 
+	private static final int EDIT_PENALTY_CHANGE = 1;
+	private static final int EDIT_PENALTY_ADD = 2;
+	private static final int EDIT_PENALTY_REMOVE = 2;
+	
 	private String word;
 	private ArrayList<Integer> syllables;
 
@@ -35,14 +39,30 @@ public class PronunciationEntry {
 			output.add(tEntry);
 
 			for (int altInd = 1; altInd < list.length; altInd ++) {
-				
+				//TODO
 				String[] secondary = list[altInd].split("['-]");
+				String[] secondaryPron = getAlternate(word.split("['-]"), secondary);
+				tEntry = new PronunciationEntry();
+				tEntry.word = word;
+				tEntry.syllables = getSyllableKeys(primary);
+				output.add(tEntry);
 			}
 		} else {
 			throw new IllegalArgumentException("Failed Parse: ");
 		}
 
 		return output;
+	}
+
+	public String toString() {
+		String syllableVals = "";
+		for (Integer syllable : syllables) {
+			syllableVals += SyllableHash.get(syllable) + "-";
+		}
+		if (syllableVals.endsWith("-")) {
+			syllableVals = syllableVals.substring(0, syllableVals.length()-1);
+		}
+		return String.format("[ %s, %s, %s ]", word, syllables.toString(), syllableVals);
 	}
 
 	private static ArrayList<Integer> getSyllableKeys(String[] syllables) {
@@ -52,12 +72,38 @@ public class PronunciationEntry {
 		}
 		return output;
 	}
-	
-	public String toString() {
-		String syllableVals = "";
-		for (Integer syllable : syllables) {
-			syllableVals += SyllableHash.get(syllable) + "-";
-		}
-		return String.format("[ %s %s %s ]", word, syllables.toString(), syllableVals);
+
+	private static String[] getAlternate(String[] original, String[] replace) {
+		return null; //todo
 	}
+
+	/**
+	 * Returns weighted edit distance heuristic between two strings
+	 * to assist in determining correct syllable insertion for
+	 * secondary pronunciations 
+	 */
+	private static int editDistance(String a, String b) {
+		int[] score = new int[b.length()];
+		int curScore;
+		for (int bInd = 0; bInd < b.length(); bInd ++) {
+			score[bInd] = bInd;
+		}
+		for (int aInd = 1; aInd < a.length(); aInd ++) {
+			int[] nextScore = new int[b.length()];
+			for (int bInd = 1; bInd < b.length(); bInd ++) {
+				if (a.charAt(aInd) == b.charAt(bInd)) {
+					curScore = score[bInd - 1];
+				} else {
+					curScore = score[bInd - 1] + EDIT_PENALTY_CHANGE;
+				}
+				curScore = Math.min(curScore, score[bInd] + EDIT_PENALTY_ADD);
+				curScore = Math.min(curScore, nextScore[bInd-1] + EDIT_PENALTY_REMOVE);
+				nextScore[bInd] = curScore;
+			}
+			score = nextScore;
+		}
+		curScore = b.length() > 0 ? score[b.length()-1] : a.length();
+		return curScore;
+	}
+
 }
