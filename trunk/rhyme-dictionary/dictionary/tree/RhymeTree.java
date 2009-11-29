@@ -1,18 +1,19 @@
 package dictionary.tree;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Vector;
 
 
 public class RhymeTree {
 
+	private RhymeTreeNode root;
+	
 	public RhymeTree() {
-		
+		root = new RhymeTreeNode(0);
 	}
 	
-	public boolean insert() {
-		
+	public boolean insert(PronunciationEntry aPronunciation) {
+		//TODO
 		return true;
 	}
 
@@ -23,13 +24,13 @@ public class RhymeTree {
 	}
 
 	private class RhymeTreeNode {
-		private long syllableValue;
+		private int syllableValue;
 		private Vector<RhymeTreeNode> childList;
 		private String isTerminating;
 
 
-		public RhymeTreeNode() {
-			
+		public RhymeTreeNode(int aKey) {
+			syllableValue = aKey;
 		}
 	}
 
