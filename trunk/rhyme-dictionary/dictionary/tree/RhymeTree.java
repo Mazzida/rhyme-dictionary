@@ -11,11 +11,9 @@ public class RhymeTree {
 		
 	}
 	
-	public void loadDictionary(File aInputFile) {
-		if (aInputFile == null) {
-			throw new IllegalArgumentException("Null input file");
-		}
+	public boolean insert() {
 		
+		return true;
 	}
 
 	public Collection<String> getRhymes() {
