@@ -16,6 +16,12 @@ public class SyllableHash {
 	/** Current insertion id value for next new syllable */
 	private static int curNewIndex = 0;
 
+	{
+		dictionary.put("", 0);
+		indexedVals.add("");
+		curNewIndex = 1;
+	}
+	
 	public static boolean contains(String aSyllable) {
 		return dictionary.containsKey(aSyllable);
 	}
