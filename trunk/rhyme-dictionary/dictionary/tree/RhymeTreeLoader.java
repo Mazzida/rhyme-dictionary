@@ -13,8 +13,10 @@ public class RhymeTreeLoader {
 			Scanner fReader = new Scanner( new File(PRONUNCIATION_DICTIONARY));
 			while (fReader.hasNextLine()) {
 				String entryString = fReader.nextLine();
-				PronunciationEntry entry = PronunciationEntry.makeEntry(entryString);
-				tree.insert(entry);
+				for (PronunciationEntry entry : PronunciationEntry.makeEntry(entryString)) {
+					System.out.println(entry);
+					tree.insert(entry);
+				}
 			}
 		} catch(Exception e) {
 			System.err.println("ERROR: tree load failure");
