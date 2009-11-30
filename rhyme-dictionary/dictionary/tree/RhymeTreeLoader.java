@@ -14,7 +14,6 @@ public class RhymeTreeLoader {
 			while (fReader.hasNextLine()) {
 				String entryString = fReader.nextLine();
 				for (PronunciationEntry entry : PronunciationEntry.makeEntry(entryString)) {
-					System.out.println(entry);
 					tree.insert(entry);
 				}
 			}
