@@ -39,12 +39,11 @@ public class PronunciationEntry {
 			output.add(tEntry);
 
 			for (int altInd = 1; altInd < list.length; altInd ++) {
-				//TODO
 				String[] secondary = list[altInd].split("['-]");
-				String[] secondaryPron = getAlternate(word.split("['-]"), secondary);
+				String[] secondaryPron = getAlternate(list[0].split("['-]"), secondary);
 				tEntry = new PronunciationEntry();
 				tEntry.word = word;
-				tEntry.syllables = getSyllableKeys(primary);
+				tEntry.syllables = getSyllableKeys(secondaryPron);
 				output.add(tEntry);
 			}
 		} else {
@@ -73,8 +72,42 @@ public class PronunciationEntry {
 		return output;
 	}
 
+	/**
+	 * Figure out the correct replacement position and return the
+	 * alternate pronunciation syllable list
+	 */
 	private static String[] getAlternate(String[] original, String[] replace) {
-		return null; //todo
+		if (replace.length == 0 || original.length == 0) {
+			throw new IllegalArgumentException("Length zero pronunciation");
+		}
+		String[] alternate = new String[original.length];
+		boolean notFirst = replace[0].length() == 0;
+		if (notFirst) {
+			replace = Arrays.copyOfRange(replace, 1, replace.length);
+		}
+		
+		int repLen = replace.length;
+		int bestScore = Integer.MAX_VALUE;
+		int bestPos = Integer.MAX_VALUE;
+		int curScore;
+		int curPos = notFirst ? 1 : 0;
+
+		while (curPos < original.length - (repLen - 1)) {
+			curScore = 0;
+			for (int cmpVal = 0; cmpVal < repLen; cmpVal ++) {
+				curScore += editDistance(original[curPos + cmpVal], replace[cmpVal]);
+			}
+			bestScore = curScore < bestScore ? curScore : bestScore;
+			bestPos = curScore == bestScore ? curPos : bestPos;
+			curPos ++;
+		}
+
+		System.arraycopy(original, 0, alternate, 0, original.length);
+		System.arraycopy(replace, 0, alternate, bestPos, repLen);
+//		System.out.println("original: " + Arrays.toString(original));
+//		System.out.println("replace: " + Arrays.toString(replace));
+//		System.out.println("alternate: " + Arrays.toString(alternate));
+		return alternate;
 	}
 
 	/**
