@@ -11,7 +11,7 @@ public class RhymeTreeLoaderTest {
 	@Test
 	public void testLoader() {
 		RhymeTree tree = RhymeTreeLoader.loadTree();
-		
+		System.out.println(tree);
 	}
 
 	
