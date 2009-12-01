@@ -2,6 +2,8 @@ package dictionary.tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +66,17 @@ public class PronunciationEntry {
 		return String.format("[ %s, %s, %s ]", word, syllables.toString(), syllableVals);
 	}
 
+	public List<Integer> getReverseSyllables() {
+		List<Integer> output;
+		output = (ArrayList<Integer>)syllables.clone();
+		Collections.reverse(output);
+		return output;
+	}
+
+	public String getWord() {
+		return word;
+	}
+
 	private static ArrayList<Integer> getSyllableKeys(String[] syllables) {
 		ArrayList<Integer> output = new ArrayList<Integer>();
 		for (String syllable : syllables) {
@@ -101,7 +114,7 @@ public class PronunciationEntry {
 			bestPos = curScore == bestScore ? curPos : bestPos;
 			curPos ++;
 		}
-
+//TODO check for n syllable replacement of m syllables where m != n
 		System.arraycopy(original, 0, alternate, 0, original.length);
 		System.arraycopy(replace, 0, alternate, bestPos, repLen);
 //		System.out.println("original: " + Arrays.toString(original));
