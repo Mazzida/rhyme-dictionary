@@ -9,18 +9,25 @@ import java.util.regex.Pattern;
 
 public class PronunciationEntry {
 
-	private static final int EDIT_PENALTY_CHANGE = 1;
-	private static final int EDIT_PENALTY_ADD = 2;
-	private static final int EDIT_PENALTY_REMOVE = 2;
+	private static final int EDIT_PENALTY_CHANGE = 2;
+	private static final int EDIT_PENALTY_ADD = 5;
+	private static final int EDIT_PENALTY_REMOVE = 5;
+	
+	private static final String SYLLABLE_SPLIT_REGEX = "['-]+";
 	
 	private String word;
 	private ArrayList<Integer> syllables;
 
-	public PronunciationEntry() {
-		word = "";
-		syllables = new ArrayList<Integer>();
+	public PronunciationEntry(String aWord, String aPrimary) {
+		word = aWord;
+		syllables = determineSyllables(aPrimary, null);
 	}
-	
+
+	public PronunciationEntry(String aWord, String aPrimary, String aSecondary) {
+		word = aWord;
+		syllables = determineSyllables(aPrimary, aSecondary);
+	}
+
 	public static ArrayList<PronunciationEntry> makeEntry(String aEntryString) {
 		ArrayList<PronunciationEntry> output = new ArrayList<PronunciationEntry>();
 		aEntryString = aEntryString.trim();
@@ -33,19 +40,14 @@ public class PronunciationEntry {
 			word = prMat.group(1);
 			String prString = prMat.group(2);
 			String[] list = prString.split(", ");
-			String[] primary = list[0].split("['-]");
+			String primary = list[0];
 
-			tEntry = new PronunciationEntry();
-			tEntry.word = word;
-			tEntry.syllables = getSyllableKeys(primary);
+			tEntry = new PronunciationEntry(word, primary);
 			output.add(tEntry);
 
 			for (int altInd = 1; altInd < list.length; altInd ++) {
-				String[] secondary = list[altInd].split("['-]");
-				String[] secondaryPron = getAlternate(list[0].split("['-]"), secondary);
-				tEntry = new PronunciationEntry();
-				tEntry.word = word;
-				tEntry.syllables = getSyllableKeys(secondaryPron);
+				String alternate = list[altInd];
+				tEntry = new PronunciationEntry(word, primary, alternate);
 				output.add(tEntry);
 			}
 		} else {
@@ -84,43 +86,69 @@ public class PronunciationEntry {
 		}
 		return output;
 	}
-
+	
 	/**
 	 * Figure out the correct replacement position and return the
 	 * alternate pronunciation syllable list
 	 */
-	private static String[] getAlternate(String[] original, String[] replace) {
-		if (replace.length == 0 || original.length == 0) {
-			throw new IllegalArgumentException("Length zero pronunciation");
+	private static ArrayList<Integer> determineSyllables(String original, String replace) {
+		if (original == null || original.length() == 0) {
+			throw new IllegalArgumentException("Null or length zero original pronunciation");
 		}
-		String[] alternate = new String[original.length];
-		boolean notFirst = replace[0].length() == 0;
-		if (notFirst) {
-			replace = Arrays.copyOfRange(replace, 1, replace.length);
+
+		String[] origSyl = original.split(SYLLABLE_SPLIT_REGEX);
+		if (replace == null || replace.length() == 0) {
+			return getSyllableKeys(origSyl);
+		}
+
+		int rLen = replace.length();
+		boolean notFirst = replace.charAt(0) == '-' || replace.charAt(0) == '\'';
+		boolean notLast = replace.charAt(rLen-1) == '-' || (replace.charAt(rLen-1) == '\'' && replace.charAt(rLen-2) == '-');
+
+		if (!notFirst && !notLast) {
+			// entire alternative is the new pronunciation
+			String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
+			ArrayList<Integer> syllableKeys = getSyllableKeys(repSyll);
+			return syllableKeys;
 		}
 		
-		int repLen = replace.length;
-		int bestScore = Integer.MAX_VALUE;
-		int bestPos = Integer.MAX_VALUE;
-		int curScore;
-		int curPos = notFirst ? 1 : 0;
-
-		while (curPos < original.length - (repLen - 1)) {
-			curScore = 0;
-			for (int cmpVal = 0; cmpVal < repLen; cmpVal ++) {
-				curScore += editDistance(original[curPos + cmpVal], replace[cmpVal]);
-			}
-			bestScore = curScore < bestScore ? curScore : bestScore;
-			bestPos = curScore == bestScore ? curPos : bestPos;
-			curPos ++;
+		if (notFirst && rLen >= 1) {
+			replace = replace.substring(1);
+			rLen --;
 		}
-//TODO check for n syllable replacement of m syllables where m != n
-		System.arraycopy(original, 0, alternate, 0, original.length);
-		System.arraycopy(replace, 0, alternate, bestPos, repLen);
-//		System.out.println("original: " + Arrays.toString(original));
-//		System.out.println("replace: " + Arrays.toString(replace));
-//		System.out.println("alternate: " + Arrays.toString(alternate));
-		return alternate;
+		if (notLast && rLen >= 1) {
+			replace = replace.substring(0, rLen - 1);
+			rLen --;
+		}
+		
+		String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
+		System.out.println(replace);
+		int bestCost = Integer.MAX_VALUE;
+		int bestPosStart = -1;
+		int bestPosEnd = -1;
+		int curCost;
+
+		for (int startPos = notFirst ? 1 : 0; startPos < origSyl.length - (notLast ? 1 : 0); startPos ++ ) { //TODO check bounds
+			for (int endPos = startPos+1; endPos < origSyl.length; endPos ++) {
+				curCost = editDistance(subSyll(origSyl, startPos, endPos), replace);
+
+				bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
+				bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
+				bestCost = curCost <= bestCost ? curCost : bestCost;
+			}
+		}
+System.out.println("" + bestPosStart + " " + bestPosEnd);
+		String[] result = new String[origSyl.length + repSyll.length - (bestPosEnd - bestPosStart)];
+
+		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
+		System.out.println(	Arrays.toString(result));
+		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
+		System.out.println(	Arrays.toString(result));
+		System.arraycopy(origSyl, bestPosEnd, result, bestPosStart + repSyll.length, result.length - bestPosEnd);
+		System.out.println(	Arrays.toString(result));
+
+		ArrayList<Integer> syllableKeys = getSyllableKeys(result);
+		return syllableKeys;
 	}
 
 	/**
@@ -152,4 +180,22 @@ public class PronunciationEntry {
 		return curScore;
 	}
 
+	/**
+	 * Returns a concetenation of the aStart, aStart+1, ..., aEnd strings
+	 * in the argument String array
+	 */
+	private static String subSyll(String[] aSyllables, int aStart, int aEnd) {
+		StringBuilder buff = new StringBuilder();
+		for (int i = aStart; i <= aEnd; i ++) {
+			buff.append(aSyllables[i]);
+		}
+		return buff.toString();
+	}
+
+	public static void main(String[] args) {
+		// (nōō'fən-lənd, -lānd', -fənd-, nyōō'-) 
+		System.out.println(		determineSyllables("nōō'fən-lənd", "-fənd-"));
+		System.out.println(		determineSyllables("nōō'fən-lənd", "-lind"));
+	}
+	
 }
