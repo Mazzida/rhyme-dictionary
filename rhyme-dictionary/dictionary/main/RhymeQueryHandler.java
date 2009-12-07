@@ -1,6 +1,6 @@
 package dictionary.main;
 
-import java.util.Collection;
+import java.util.Set;
 
 import dictionary.tree.RhymeTree;
 import dictionary.tree.RhymeTreeLoader;
@@ -18,7 +18,7 @@ public class RhymeQueryHandler {
 		trie = RhymeTreeLoader.loadTree();
 	}
 
-	public static Collection<String> getRhymes(String aWord) {
+	public static Set<String> getRhymes(String aWord) {
 		return singleton.trie.getRhymes(aWord);
 	}
 

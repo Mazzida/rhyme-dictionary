@@ -16,6 +16,12 @@ public class RhymeQueryTest {
 		for (String result : curResult) {
 			System.out.println(result);
 		}
+		
+		curResult = RhymeQueryHandler.getRhymes("video");
+		for (String result : curResult) {
+			System.out.println(result);
+		}
+
 	}
 
 }
