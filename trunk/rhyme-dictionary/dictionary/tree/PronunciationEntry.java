@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 public class PronunciationEntry {
 
 	private static final int EDIT_PENALTY_CHANGE = 2;
-	private static final int EDIT_PENALTY_ADD = 5;
-	private static final int EDIT_PENALTY_REMOVE = 5;
+	private static final int EDIT_PENALTY_ADD = 15;
+	private static final int EDIT_PENALTY_REMOVE = 15;
 	
 	private static final String SYLLABLE_SPLIT_REGEX = "['-]+";
 	
@@ -196,10 +196,11 @@ System.out.println("RESULT: " +Arrays.toString(result));
 		int[] score = new int[b.length()];
 		int curScore;
 		for (int bInd = 0; bInd < b.length(); bInd ++) {
-			score[bInd] = bInd;
+			score[bInd] = bInd * EDIT_PENALTY_ADD;
 		}
 		for (int aInd = 1; aInd < a.length(); aInd ++) {
 			int[] nextScore = new int[b.length()];
+			nextScore[0] = aInd * EDIT_PENALTY_REMOVE;
 			for (int bInd = 1; bInd < b.length(); bInd ++) {
 				if (a.charAt(aInd) == b.charAt(bInd)) {
 					curScore = score[bInd - 1];
@@ -212,7 +213,7 @@ System.out.println("RESULT: " +Arrays.toString(result));
 			}
 			score = nextScore;
 		}
-		curScore = b.length() > 0 ? score[b.length()-1] : a.length();
+		curScore = (b.length() > 0) ? score[b.length()-1] : a.length();
 		return curScore;
 	}
 
@@ -231,9 +232,11 @@ System.out.println("RESULT: " +Arrays.toString(result));
 	public static void main(String[] args) {
 		// (nōō'fən-lənd, -lānd', -fənd-, nyōō'-) 
 //		System.out.println(	determineSyllables("nōō'fən-lənd", "-fənd-"));
-		System.out.println(	determineSyllables("nōō'fən-lənd", "-lend'"));
-//		System.out.println(	editDistance("elone","abelone"));
-//		System.out.println(	editDistance("abelone","abelone"));
+//		System.out.println(	determineSyllables("nōō'fən-lənd", "-lend'"));
+		System.out.println(	editDistance("āb","ābəlōnē"));
+		System.out.println(	editDistance("ābəlōnē","āb"));
+		System.out.println(	editDistance("ābəlō","ābəlōnē"));
+		System.out.println(	editDistance("ābəlōnē","ābəlō"));
 	}
 	
 }
