@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 
@@ -34,8 +36,8 @@ public class RhymeTree {
 		return true;
 	}
 
-	public Collection<String> getRhymes(String aWord) {
-		Collection<String> output = new Vector<String>();
+	public Set<String> getRhymes(String aWord) {
+		TreeSet<String> output = new TreeSet<String>();
 		RhymeTreeNode curNode = wordPronunciation.get(aWord);
 
 		// that word is not in this list
