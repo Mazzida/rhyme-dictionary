@@ -10,11 +10,16 @@ import java.util.regex.Pattern;
 public class PronunciationEntry {
 
 	private static final int EDIT_PENALTY_CHANGE = 2;
-	private static final int EDIT_PENALTY_ADD = 15;
-	private static final int EDIT_PENALTY_REMOVE = 15;
-	
+	/** penalty for adding/removing characters, should always be greater than the
+	 * change penalty */
+	private static final int EDIT_PENALTY_ADD = 5;
+	private static final int EDIT_PENALTY_REMOVE = 5;
+	/** penalty for difference in number of syllables between replacement, replaced 
+	 * slot; this should always be greater than add/remove by at least 1 */
+	private static final int SYLLABLE_PENALTY = 6;
+
 	private static final String SYLLABLE_SPLIT_REGEX = "['-]+";
-	
+
 	private String word;
 	private ArrayList<Integer> syllables;
 
@@ -120,8 +125,10 @@ public class PronunciationEntry {
 			replace = replace.substring(0, rLen - 1);
 			rLen --;
 		}
-		
+
+		String strippedReplace = replace.replaceAll(SYLLABLE_SPLIT_REGEX, "");		
 		String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
+		int repLen = repSyll.length;
 		int bestCost = Integer.MAX_VALUE;
 		int bestPosStart = -1;
 		int bestPosEnd = -1;
@@ -130,11 +137,10 @@ public class PronunciationEntry {
 		if (!notFirst) {
 			// first - startPos is first char of original
 			int startPos = 0;
-System.out.println("first case");
 			for (int endPos = 0; endPos < origSyl.length; endPos ++) {
 				String curSubString = subSyll(origSyl, startPos, endPos);
-System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
-				curCost = editDistance(curSubString, replace);
+				curCost = editDistance(curSubString, strippedReplace);
+				curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
 
 				bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
 				bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
@@ -142,47 +148,35 @@ System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " 
 			}			
 		} else if (!notLast) {
 			// last - endPos is last char of original
-System.out.println("last case");
 			for (int startPos = 0; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
 				int endPos = origSyl.length - 1;
 				String curSubString = subSyll(origSyl, startPos, endPos);
-System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
-				curCost = editDistance(curSubString, replace);
+				curCost = editDistance(curSubString, strippedReplace);
+				curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
 
 				bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
 				bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
 				bestCost = curCost <= bestCost ? curCost : bestCost;
 			}			
 		} else {
-System.out.println("middle case");
 			for (int startPos = 1; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
 				for (int endPos = startPos; endPos < origSyl.length-1; endPos ++) {
 					String curSubString = subSyll(origSyl, startPos, endPos);
-System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
-					curCost = editDistance(curSubString, replace);
-	
+					curCost = editDistance(curSubString, strippedReplace);
+					curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
+
 					bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
 					bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
 					bestCost = curCost <= bestCost ? curCost : bestCost;
 				}
 			}
 		}
-System.out.println("best start, end: " + bestPosStart + " " + bestPosEnd);
-		String[] result = new String[origSyl.length + repSyll.length - (1 + bestPosEnd - bestPosStart)];
-try {
-		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
-System.out.println(	Arrays.toString(result));
-		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
-System.out.println(	Arrays.toString(result));
-		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
-System.out.println(	Arrays.toString(result));
-} catch(Exception e) {
-	System.out.println("origSyl" + Arrays.toString(origSyl));
-	System.out.println("repSyl" + Arrays.toString(repSyll));
-	e.printStackTrace();
-}
 
-System.out.println("RESULT: " +Arrays.toString(result));
+		String[] result = new String[origSyl.length + repSyll.length - (1 + bestPosEnd - bestPosStart)];
+		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
+		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
+		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
+
 		ArrayList<Integer> syllableKeys = getSyllableKeys(result);
 		return syllableKeys;
 	}
@@ -217,6 +211,10 @@ System.out.println("RESULT: " +Arrays.toString(result));
 		return curScore;
 	}
 
+	private static int getSyllablePenalty(int aReplaceLen, int aSlotLen) {
+		return Math.abs(aReplaceLen - aSlotLen) *  SYLLABLE_PENALTY;
+	}
+	
 	/**
 	 * Returns a concetenation of the aStart, aStart+1, ..., aEnd strings
 	 * in the argument String array
@@ -235,8 +233,6 @@ System.out.println("RESULT: " +Arrays.toString(result));
 //		System.out.println(	determineSyllables("nōō'fən-lənd", "-lend'"));
 		System.out.println(	editDistance("āb","ābəlōnē"));
 		System.out.println(	editDistance("ābəlōnē","āb"));
-		System.out.println(	editDistance("ābəlō","ābəlōnē"));
-		System.out.println(	editDistance("ābəlōnē","ābəlō"));
 	}
 	
 }
