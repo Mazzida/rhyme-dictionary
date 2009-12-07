@@ -1,7 +1,9 @@
 package dictionary.tree;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 
@@ -9,8 +11,14 @@ public class RhymeTree {
 
 	private RhymeTreeNode root;
 	
+	/**
+	 * Map from word strings to syllable pronunciation node from which one can traverse
+	 * back-pointers to collect the entire word's pronunciation
+	 */
+	private Map<String, RhymeTreeNode> wordPronunciation = new HashMap<String, RhymeTreeNode>();
+
 	public RhymeTree() {
-		root = new RhymeTreeNode(0);
+		root = new RhymeTreeNode(null, 0);
 	}
 	
 	public boolean insert(PronunciationEntry aPronunciation) {
@@ -21,12 +29,23 @@ public class RhymeTree {
 			curNode = curNode.getChild(syllableKey);
 		}
 		curNode.setEndNode(aPronunciation.getWord());
+		wordPronunciation.put(aPronunciation.getWord(), curNode);
 
 		return true;
 	}
 
-	public Collection<String> getRhymes() {
+	public Collection<String> getRhymes(String aWord) {
 		Collection<String> output = new Vector<String>();
+		RhymeTreeNode curNode = wordPronunciation.get(aWord);
+
+		// that word is not in this list
+		if (curNode == null)
+			return null;
+		
+		while (curNode != root) {
+			curNode.getAllWords(output);
+			curNode = curNode.parent;
+		}
 		
 		return output;
 	}
@@ -36,11 +55,13 @@ public class RhymeTree {
 	}
 
 	private class RhymeTreeNode {
+		private RhymeTreeNode parent;
 		private int syllableValue;
 		private Vector<RhymeTreeNode> childList;
 		private Vector<String> isTerminating;
 
-		public RhymeTreeNode(int aKey) {
+		public RhymeTreeNode(RhymeTreeNode aParent, int aKey) {
+			parent = aParent;
 			syllableValue = aKey;
 		}
 		
@@ -55,9 +76,20 @@ public class RhymeTree {
 			return isTerminating;
 		}
 
+		private void getAllWords(Collection<String> aBucket) {
+			if (isTerminating != null)
+				aBucket.addAll(isTerminating);
+
+			if (childList != null) {
+				for (RhymeTreeNode node : childList) {
+					node.getAllWords(aBucket);
+				}
+			}
+		}
+
 		private RhymeTreeNode getChild(int aKey) {
 			if (childList == null) {
-				RhymeTreeNode output = new RhymeTreeNode(aKey);
+				RhymeTreeNode output = new RhymeTreeNode(this, aKey);
 				childList = new Vector<RhymeTreeNode>();
 				childList.add(output);
 				return output;
@@ -67,7 +99,7 @@ public class RhymeTree {
 						return child;
 					}
 				}
-				RhymeTreeNode output = new RhymeTreeNode(aKey);
+				RhymeTreeNode output = new RhymeTreeNode(this, aKey);
 				childList.add(output);
 				return output;
 			}
