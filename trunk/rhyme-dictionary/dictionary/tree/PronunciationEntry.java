@@ -122,31 +122,67 @@ public class PronunciationEntry {
 		}
 		
 		String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
-		System.out.println(replace);
 		int bestCost = Integer.MAX_VALUE;
 		int bestPosStart = -1;
 		int bestPosEnd = -1;
 		int curCost;
 
-		for (int startPos = notFirst ? 1 : 0; startPos < origSyl.length - (notLast ? 1 : 0); startPos ++ ) { //TODO check bounds
-			for (int endPos = startPos+1; endPos < origSyl.length; endPos ++) {
-				curCost = editDistance(subSyll(origSyl, startPos, endPos), replace);
+		if (!notFirst) {
+			// first - startPos is first char of original
+			int startPos = 0;
+System.out.println("first case");
+			for (int endPos = 0; endPos < origSyl.length; endPos ++) {
+				String curSubString = subSyll(origSyl, startPos, endPos);
+System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
+				curCost = editDistance(curSubString, replace);
 
 				bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
 				bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
 				bestCost = curCost <= bestCost ? curCost : bestCost;
+			}			
+		} else if (!notLast) {
+			// last - endPos is last char of original
+System.out.println("last case");
+			for (int startPos = 0; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
+				int endPos = origSyl.length - 1;
+				String curSubString = subSyll(origSyl, startPos, endPos);
+System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
+				curCost = editDistance(curSubString, replace);
+
+				bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
+				bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
+				bestCost = curCost <= bestCost ? curCost : bestCost;
+			}			
+		} else {
+System.out.println("middle case");
+			for (int startPos = 1; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
+				for (int endPos = startPos; endPos < origSyl.length-1; endPos ++) {
+					String curSubString = subSyll(origSyl, startPos, endPos);
+System.out.println("curSubString: " + curSubString + "  for: " + startPos + " " + endPos);
+					curCost = editDistance(curSubString, replace);
+	
+					bestPosStart = curCost <= bestCost ? startPos : bestPosStart;
+					bestPosEnd = curCost <= bestCost ? endPos : bestPosEnd;
+					bestCost = curCost <= bestCost ? curCost : bestCost;
+				}
 			}
 		}
-System.out.println("" + bestPosStart + " " + bestPosEnd);
-		String[] result = new String[origSyl.length + repSyll.length - (bestPosEnd - bestPosStart)];
-
+System.out.println("best start, end: " + bestPosStart + " " + bestPosEnd);
+		String[] result = new String[origSyl.length + repSyll.length - (1 + bestPosEnd - bestPosStart)];
+try {
 		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
-		System.out.println(	Arrays.toString(result));
+System.out.println(	Arrays.toString(result));
 		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
-		System.out.println(	Arrays.toString(result));
-		System.arraycopy(origSyl, bestPosEnd, result, bestPosStart + repSyll.length, result.length - bestPosEnd);
-		System.out.println(	Arrays.toString(result));
+System.out.println(	Arrays.toString(result));
+		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
+System.out.println(	Arrays.toString(result));
+} catch(Exception e) {
+	System.out.println("origSyl" + Arrays.toString(origSyl));
+	System.out.println("repSyl" + Arrays.toString(repSyll));
+	e.printStackTrace();
+}
 
+System.out.println("RESULT: " +Arrays.toString(result));
 		ArrayList<Integer> syllableKeys = getSyllableKeys(result);
 		return syllableKeys;
 	}
@@ -194,8 +230,10 @@ System.out.println("" + bestPosStart + " " + bestPosEnd);
 
 	public static void main(String[] args) {
 		// (nōō'fən-lənd, -lānd', -fənd-, nyōō'-) 
-		System.out.println(		determineSyllables("nōō'fən-lənd", "-fənd-"));
-		System.out.println(		determineSyllables("nōō'fən-lənd", "-lind"));
+//		System.out.println(	determineSyllables("nōō'fən-lənd", "-fənd-"));
+		System.out.println(	determineSyllables("nōō'fən-lənd", "-lend'"));
+//		System.out.println(	editDistance("elone","abelone"));
+//		System.out.println(	editDistance("abelone","abelone"));
 	}
 	
 }
