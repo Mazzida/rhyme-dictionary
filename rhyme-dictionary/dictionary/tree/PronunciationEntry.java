@@ -148,7 +148,7 @@ public class PronunciationEntry {
 			}			
 		} else if (!notLast) {
 			// last - endPos is last char of original
-			for (int startPos = 0; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
+			for (int startPos = 0; startPos < origSyl.length; startPos ++ ) {
 				int endPos = origSyl.length - 1;
 				String curSubString = subSyll(origSyl, startPos, endPos);
 				curCost = editDistance(curSubString, strippedReplace);
@@ -159,7 +159,7 @@ public class PronunciationEntry {
 				bestCost = curCost <= bestCost ? curCost : bestCost;
 			}			
 		} else {
-			for (int startPos = 1; startPos < origSyl.length; startPos ++ ) { //TODO check bounds
+			for (int startPos = 1; startPos < origSyl.length; startPos ++ ) {
 				for (int endPos = startPos; endPos < origSyl.length-1; endPos ++) {
 					String curSubString = subSyll(origSyl, startPos, endPos);
 					curCost = editDistance(curSubString, strippedReplace);
