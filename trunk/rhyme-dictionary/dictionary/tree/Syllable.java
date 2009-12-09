@@ -3,9 +3,11 @@ package dictionary.tree;
 public class Syllable {
 
 	private String syllable;
+	private boolean stressed;
 
-	protected Syllable(String aSyllable) {
+	protected Syllable(String aSyllable, boolean aStressed) {
 		syllable = aSyllable;
+		stressed = aStressed;
 	}
 
 	public int hashCode() {
@@ -15,11 +17,11 @@ public class Syllable {
 	public boolean equals(Object o) {
 		if (o instanceof Syllable) {
 			Syllable s = (Syllable) o;
-			return s.syllable.equals(syllable);
+			return s.syllable.equals(syllable) && s.stressed == stressed;
 		}
 		return false;
 	}
 
-	public static final Syllable NULL = new Syllable("");
+	public static final Syllable NULL = new Syllable("", false);
 
 }
