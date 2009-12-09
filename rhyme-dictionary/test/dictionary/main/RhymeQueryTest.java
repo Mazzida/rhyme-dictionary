@@ -12,7 +12,7 @@ public class RhymeQueryTest {
 	@Test
 	public void testLoader() {
 		Collection<String> curResult;
-		curResult = RhymeQueryHandler.getRhymes("elephant");
+		curResult = RhymeQueryHandler.getRhymes("neutralize");
 		for (String result : curResult) {
 			System.out.println(result);
 		}

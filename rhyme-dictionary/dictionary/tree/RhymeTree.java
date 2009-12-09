@@ -20,14 +20,14 @@ public class RhymeTree {
 	private Map<String, RhymeTreeNode> wordPronunciation = new HashMap<String, RhymeTreeNode>();
 
 	public RhymeTree() {
-		root = new RhymeTreeNode(null, 0);
+		root = new RhymeTreeNode(null, SyllableKey.NULL);
 	}
 	
 	public boolean insert(PronunciationEntry aPronunciation) {
-		List<Integer> rSyllables = aPronunciation.getReverseSyllables();
+		List<SyllableKey> rSyllables = aPronunciation.getReverseSyllables();
 		RhymeTreeNode curNode = root;
 
-		for (Integer syllableKey : rSyllables) {
+		for (SyllableKey syllableKey : rSyllables) {
 			curNode = curNode.getChild(syllableKey);
 		}
 		curNode.setEndNode(aPronunciation.getWord());
@@ -58,11 +58,11 @@ public class RhymeTree {
 
 	private class RhymeTreeNode {
 		private RhymeTreeNode parent;
-		private int syllableValue;
+		private SyllableKey syllableValue;
 		private Vector<RhymeTreeNode> childList;
 		private Vector<String> isTerminating;
 
-		public RhymeTreeNode(RhymeTreeNode aParent, int aKey) {
+		public RhymeTreeNode(RhymeTreeNode aParent, SyllableKey aKey) {
 			parent = aParent;
 			syllableValue = aKey;
 		}
@@ -89,7 +89,7 @@ public class RhymeTree {
 			}
 		}
 
-		private RhymeTreeNode getChild(int aKey) {
+		private RhymeTreeNode getChild(SyllableKey aKey) {
 			if (childList == null) {
 				RhymeTreeNode output = new RhymeTreeNode(this, aKey);
 				childList = new Vector<RhymeTreeNode>();

@@ -21,7 +21,7 @@ public class PronunciationEntry {
 	private static final String SYLLABLE_SPLIT_REGEX = "['-]+";
 
 	private String word;
-	private ArrayList<Integer> syllables;
+	private ArrayList<SyllableKey> syllables;
 
 	public PronunciationEntry(String aWord, String aPrimary) {
 		word = aWord;
@@ -64,7 +64,7 @@ public class PronunciationEntry {
 
 	public String toString() {
 		String syllableVals = "";
-		for (Integer syllable : syllables) {
+		for (SyllableKey syllable : syllables) {
 			syllableVals += SyllableHash.get(syllable) + "-";
 		}
 		if (syllableVals.endsWith("-")) {
@@ -73,9 +73,9 @@ public class PronunciationEntry {
 		return String.format("[ %s, %s, %s ]", word, syllables.toString(), syllableVals);
 	}
 
-	public List<Integer> getReverseSyllables() {
-		List<Integer> output;
-		output = (ArrayList<Integer>)syllables.clone();
+	public List<SyllableKey> getReverseSyllables() {
+		List<SyllableKey> output;
+		output = (ArrayList<SyllableKey>)syllables.clone();
 		Collections.reverse(output);
 		return output;
 	}
@@ -84,10 +84,10 @@ public class PronunciationEntry {
 		return word;
 	}
 
-	private static ArrayList<Integer> getSyllableKeys(String[] syllables) {
-		ArrayList<Integer> output = new ArrayList<Integer>();
+	private static ArrayList<SyllableKey> getSyllableKeys(String[] syllables) {
+		ArrayList<SyllableKey> output = new ArrayList<SyllableKey>();
 		for (String syllable : syllables) {
-			output.add(SyllableHash.insert(syllable));
+			output.add(SyllableHash.insert(new Syllable(syllable)));
 		}
 		return output;
 	}
@@ -96,7 +96,7 @@ public class PronunciationEntry {
 	 * Figure out the correct replacement position and return the
 	 * alternate pronunciation syllable list
 	 */
-	private static ArrayList<Integer> determineSyllables(String original, String replace) {
+	private static ArrayList<SyllableKey> determineSyllables(String original, String replace) {
 		if (original == null || original.length() == 0) {
 			throw new IllegalArgumentException("Null or length zero original pronunciation");
 		}
@@ -113,7 +113,7 @@ public class PronunciationEntry {
 		if (!notFirst && !notLast) {
 			// entire alternative is the new pronunciation
 			String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
-			ArrayList<Integer> syllableKeys = getSyllableKeys(repSyll);
+			ArrayList<SyllableKey> syllableKeys = getSyllableKeys(repSyll);
 			return syllableKeys;
 		}
 		
@@ -177,7 +177,7 @@ public class PronunciationEntry {
 		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
 		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
 
-		ArrayList<Integer> syllableKeys = getSyllableKeys(result);
+		ArrayList<SyllableKey> syllableKeys = getSyllableKeys(result);
 		return syllableKeys;
 	}
 
