@@ -9,32 +9,34 @@ public class SyllableHash {
 	/**
 	 * Map from syllable strings to unique (incremented upon insertion) ids
 	 */
-	private static final Map<String, Integer> dictionary = new HashMap<String, Integer>();
+	private static final Map<Syllable, SyllableKey> dictionary = new HashMap<Syllable, SyllableKey>();
 
-	private static final Vector<String> indexedVals = new Vector<String>();
+	private static final Vector<Syllable> indexedVals = new Vector<Syllable>();
 
 	/** Current insertion id value for next new syllable */
-	private static int curNewIndex = 0;
+	private static SyllableKey curNewIndex = SyllableKey.NULL;
 
 	static {
-		dictionary.put("", curNewIndex);
-		indexedVals.add("");
-		curNewIndex ++;
+		dictionary.put(Syllable.NULL, SyllableKey.NULL);
+		indexedVals.add(Syllable.NULL);
+		curNewIndex = curNewIndex.increment();
 	}
 	
-	public static boolean contains(String aSyllable) {
+	public static boolean contains(Syllable aSyllable) {
 		return dictionary.containsKey(aSyllable);
 	}
 
 	/**
 	 * Returns the integer key for the syllable inserted
 	 */
-	public static int insert(String aSyllable) {
+	public static SyllableKey insert(Syllable aSyllable) {
 		if (!dictionary.containsKey(aSyllable)) {
+			SyllableKey output;
+			output = curNewIndex;
 			dictionary.put(aSyllable, curNewIndex);
-			curNewIndex ++;
+			curNewIndex = curNewIndex.increment();
 			indexedVals.add(aSyllable);
-			return curNewIndex - 1;
+			return output;
 		}
 		return dictionary.get(aSyllable);
 	}
@@ -42,12 +44,8 @@ public class SyllableHash {
 	/**
 	 * Returns the syllable string for the key if exists
 	 */
-	public static String get(int aKey) {
-		if (aKey >= 0 && aKey < curNewIndex) {
-			return indexedVals.get(aKey);
-		} else {
-			throw new IllegalArgumentException("Key value out of range");
-		}
+	public static Syllable get(SyllableKey aKey) {
+		return indexedVals.get(aKey.getIndex());
 	}
 
 }
