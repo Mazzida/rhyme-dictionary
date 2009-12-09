@@ -19,9 +19,13 @@ public class PronunciationEntry {
 	private static final int SYLLABLE_PENALTY = 6;
 
 	private static final String SYLLABLE_SPLIT_REGEX = "['-]+";
+	private static final String SYLLABLE_NORMAL_PATTERN = "([^-']+?-).*";
+	private static final String SYLLABLE_STRESS_PATTERN_1 = "([^-']+?'-).*";
+	private static final String SYLLABLE_STRESS_PATTERN_2 = "([^-']+?').*";
+
 
 	private String word;
-	private ArrayList<SyllableKey> syllables;
+	private List<SyllableKey> syllables;
 
 	public PronunciationEntry(String aWord, String aPrimary) {
 		word = aWord;
@@ -74,8 +78,8 @@ public class PronunciationEntry {
 	}
 
 	public List<SyllableKey> getReverseSyllables() {
-		List<SyllableKey> output;
-		output = (ArrayList<SyllableKey>)syllables.clone();
+		List<SyllableKey> output = new ArrayList<SyllableKey>();
+		Collections.copy(syllables, output);
 		Collections.reverse(output);
 		return output;
 	}
@@ -83,27 +87,18 @@ public class PronunciationEntry {
 	public String getWord() {
 		return word;
 	}
-
-	private static ArrayList<SyllableKey> getSyllableKeys(String[] syllables) {
-		ArrayList<SyllableKey> output = new ArrayList<SyllableKey>();
-		for (String syllable : syllables) {
-			output.add(SyllableHash.insert(new Syllable(syllable)));
-		}
-		return output;
-	}
 	
 	/**
 	 * Figure out the correct replacement position and return the
 	 * alternate pronunciation syllable list
 	 */
-	private static ArrayList<SyllableKey> determineSyllables(String original, String replace) {
+	private static List<SyllableKey> determineSyllables(String original, String replace) {
 		if (original == null || original.length() == 0) {
 			throw new IllegalArgumentException("Null or length zero original pronunciation");
 		}
 
-		String[] origSyl = original.split(SYLLABLE_SPLIT_REGEX);
 		if (replace == null || replace.length() == 0) {
-			return getSyllableKeys(origSyl);
+			return getSyllableKeys(original);
 		}
 
 		int rLen = replace.length();
@@ -112,9 +107,7 @@ public class PronunciationEntry {
 
 		if (!notFirst && !notLast) {
 			// entire alternative is the new pronunciation
-			String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
-			ArrayList<SyllableKey> syllableKeys = getSyllableKeys(repSyll);
-			return syllableKeys;
+			return getSyllableKeys(replace);
 		}
 		
 		if (notFirst && rLen >= 1) {
@@ -126,6 +119,7 @@ public class PronunciationEntry {
 			rLen --;
 		}
 
+		String[] origSyl = original.split(SYLLABLE_SPLIT_REGEX);
 		String strippedReplace = replace.replaceAll(SYLLABLE_SPLIT_REGEX, "");		
 		String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
 		int repLen = repSyll.length;
@@ -173,14 +167,58 @@ public class PronunciationEntry {
 		}
 
 		String[] result = new String[origSyl.length + repSyll.length - (1 + bestPosEnd - bestPosStart)];
-		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
-		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
-		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
+		StringBuilder output = new StringBuilder();
 
-		ArrayList<SyllableKey> syllableKeys = getSyllableKeys(result);
-		return syllableKeys;
+		for (int i = 0; i < bestPosStart; i ++)
+			output.append(origSyl[i]);
+		for (int i = 0; i < repSyll.length; i ++)
+			output.append(repSyll[i]);
+		for (int i = 0; i <origSyl.length - bestPosEnd - 1; i ++) 
+			output.append(origSyl[bestPosEnd+1+i]);
+		
+//		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
+//		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
+//		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
+
+		return getSyllableKeys(output.toString());
 	}
 
+	private static ArrayList<SyllableKey> getSyllableKeys(String aSyllables) {
+		ArrayList<SyllableKey> output = new ArrayList<SyllableKey>();
+		Matcher norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
+		Matcher st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
+		Matcher st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
+
+		while( true ) {
+			System.out.println(aSyllables);
+			if (norMat.matches()) {
+	System.out.println("normal");
+				String temp = norMat.group(1);
+				output.add(SyllableHash.insert(new Syllable(temp.replace("-", ""), false)));
+				aSyllables = aSyllables.substring(temp.length());
+			} else if (st1Mat.matches()) {
+	System.out.println("		stress1");
+				String temp = st1Mat.group(1);
+				output.add(SyllableHash.insert(new Syllable(temp.replace("'-", ""), true)));
+				aSyllables = aSyllables.substring(temp.length());
+			} else if (st2Mat.matches()) {
+	System.out.println("					stress2");
+				String temp = st2Mat.group(1);
+				output.add(SyllableHash.insert(new Syllable(temp.replace("'", ""), true)));
+				aSyllables = aSyllables.substring(temp.length());
+			} else {
+				output.add(SyllableHash.insert(new Syllable(aSyllables, false)));
+				break;
+			}
+
+			norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
+			st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
+			st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
+		}
+
+		return output;
+	}
+	
 	/**
 	 * Returns weighted edit distance heuristic between two strings
 	 * to assist in determining correct syllable insertion for
