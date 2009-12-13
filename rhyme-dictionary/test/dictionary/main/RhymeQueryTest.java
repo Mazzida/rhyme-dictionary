@@ -12,12 +12,12 @@ public class RhymeQueryTest {
 	@Test
 	public void testLoader() {
 		Collection<String> curResult;
-		curResult = RhymeQueryHandler.getRhymes("neutralize");
+		curResult = RhymeQueryHandler.getRhymes("test1");
 		for (String result : curResult) {
 			System.out.println(result);
 		}
 		
-		curResult = RhymeQueryHandler.getRhymes("video");
+//		curResult = RhymeQueryHandler.getRhymes("video");
 		for (String result : curResult) {
 			System.out.println(result);
 		}

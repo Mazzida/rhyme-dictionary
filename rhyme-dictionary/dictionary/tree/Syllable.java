@@ -21,6 +21,14 @@ public class Syllable {
 		}
 		return false;
 	}
+	
+	public String toString() {
+		return syllable + (stressed ? "'" : "");
+	}
+
+	public String toPlainString() {
+		return syllable;
+	}
 
 	public static final Syllable NULL = new Syllable("", false);
 

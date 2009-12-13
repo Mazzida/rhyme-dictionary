@@ -2,7 +2,7 @@ package dictionary.tree;
 
 public class SyllableKey {
 
-	private int key;
+	private final int key;
 
 	protected SyllableKey(int aKey) {
 		key = aKey;
@@ -26,6 +26,10 @@ public class SyllableKey {
 			return s.key == key;
 		}
 		return false;
+	}
+	
+	public String toString() {
+		return String.format("[%s:%s]", key, SyllableHash.get(this));
 	}
 	
 	public static final SyllableKey NULL = new SyllableKey(0);
