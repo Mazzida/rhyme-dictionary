@@ -48,7 +48,8 @@ public class RhymeTree {
 			curNode.getAllWords(output);
 			curNode = curNode.parent;
 		}
-		
+		toString();
+		System.out.println(toString());
 		return output;
 	}
 
@@ -110,7 +111,7 @@ public class RhymeTree {
 		private String toRecursiveString(String accumulatedString) {
 			String output = "";
 			if (isTerminating != null)
-				return  SyllableHash.get(syllableValue) + accumulatedString + "\t\t" + isTerminating + "\n";
+				return SyllableHash.get(syllableValue).toString() + accumulatedString + "\t\t" + isTerminating + "\n";
 			if (childList != null) {
 				for (RhymeTreeNode child : childList) {
 					output += child.toRecursiveString(SyllableHash.get(syllableValue) + accumulatedString);

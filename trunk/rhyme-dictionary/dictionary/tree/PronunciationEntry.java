@@ -3,6 +3,7 @@ package dictionary.tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,7 +99,7 @@ public class PronunciationEntry {
 		}
 
 		if (replace == null || replace.length() == 0) {
-			return getSyllableKeys(original);
+			return getKeyEncodeSyllables(getParsedSyllables(original));
 		}
 
 		int rLen = replace.length();
@@ -107,7 +108,7 @@ public class PronunciationEntry {
 
 		if (!notFirst && !notLast) {
 			// entire alternative is the new pronunciation
-			return getSyllableKeys(replace);
+			return getKeyEncodeSyllables(getParsedSyllables(replace));
 		}
 		
 		if (notFirst && rLen >= 1) {
@@ -119,10 +120,11 @@ public class PronunciationEntry {
 			rLen --;
 		}
 
-		String[] origSyl = original.split(SYLLABLE_SPLIT_REGEX);
-		String strippedReplace = replace.replaceAll(SYLLABLE_SPLIT_REGEX, "");		
-		String[] repSyll = replace.split(SYLLABLE_SPLIT_REGEX);
-		int repLen = repSyll.length;
+		ArrayList<Syllable> origSyl = getParsedSyllables(original);
+		String strippedReplace = replace.replaceAll(SYLLABLE_SPLIT_REGEX, "");
+		ArrayList<Syllable> repSyl = getParsedSyllables(replace);
+		
+		int repLen = repSyl.size();
 		int bestCost = Integer.MAX_VALUE;
 		int bestPosStart = -1;
 		int bestPosEnd = -1;
@@ -131,7 +133,7 @@ public class PronunciationEntry {
 		if (!notFirst) {
 			// first - startPos is first char of original
 			int startPos = 0;
-			for (int endPos = 0; endPos < origSyl.length; endPos ++) {
+			for (int endPos = 0; endPos < origSyl.size(); endPos ++) {
 				String curSubString = subSyll(origSyl, startPos, endPos);
 				curCost = editDistance(curSubString, strippedReplace);
 				curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
@@ -142,8 +144,8 @@ public class PronunciationEntry {
 			}			
 		} else if (!notLast) {
 			// last - endPos is last char of original
-			for (int startPos = 0; startPos < origSyl.length; startPos ++ ) {
-				int endPos = origSyl.length - 1;
+			for (int startPos = 0; startPos < origSyl.size(); startPos ++ ) {
+				int endPos = origSyl.size() - 1;
 				String curSubString = subSyll(origSyl, startPos, endPos);
 				curCost = editDistance(curSubString, strippedReplace);
 				curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
@@ -153,8 +155,8 @@ public class PronunciationEntry {
 				bestCost = curCost <= bestCost ? curCost : bestCost;
 			}			
 		} else {
-			for (int startPos = 1; startPos < origSyl.length; startPos ++ ) {
-				for (int endPos = startPos; endPos < origSyl.length-1; endPos ++) {
+			for (int startPos = 1; startPos < origSyl.size(); startPos ++ ) {
+				for (int endPos = startPos; endPos < origSyl.size()-1; endPos ++) {
 					String curSubString = subSyll(origSyl, startPos, endPos);
 					curCost = editDistance(curSubString, strippedReplace);
 					curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
@@ -166,48 +168,40 @@ public class PronunciationEntry {
 			}
 		}
 
-		String[] result = new String[origSyl.length + repSyll.length - (1 + bestPosEnd - bestPosStart)];
 		StringBuilder output = new StringBuilder();
 
 		for (int i = 0; i < bestPosStart; i ++)
-			output.append(origSyl[i]);
-		for (int i = 0; i < repSyll.length; i ++)
-			output.append(repSyll[i]);
-		for (int i = 0; i <origSyl.length - bestPosEnd - 1; i ++) 
-			output.append(origSyl[bestPosEnd+1+i]);
-		
-//		System.arraycopy(origSyl, 0, result, 0, bestPosStart);
-//		System.arraycopy(repSyll, 0, result, bestPosStart, repSyll.length);
-//		System.arraycopy(origSyl, bestPosEnd + 1, result, bestPosStart + repSyll.length, origSyl.length - bestPosEnd - 1);
+			output.append(origSyl.get(i));
+		for (int i = 0; i < repSyl.size(); i ++)
+			output.append(repSyl.get(i));
+		for (int i = 0; i < origSyl.size() - bestPosEnd - 1; i ++) 
+			output.append(origSyl.get(bestPosEnd+1+i));
+		System.out.println("output: " + output); //TODO remove
 
-		return getSyllableKeys(output.toString());
+		return getKeyEncodeSyllables(getParsedSyllables(output.toString()));
 	}
 
-	private static ArrayList<SyllableKey> getSyllableKeys(String aSyllables) {
-		ArrayList<SyllableKey> output = new ArrayList<SyllableKey>();
+	private static ArrayList<Syllable> getParsedSyllables(String aSyllables) {
+		ArrayList<Syllable> output = new ArrayList<Syllable>();
 		Matcher norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
 		Matcher st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
 		Matcher st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
 
 		while( true ) {
-			System.out.println(aSyllables);
-			if (norMat.matches()) {
-	System.out.println("normal");
+			if (norMat.matches()) { //  - stress pattern
 				String temp = norMat.group(1);
-				output.add(SyllableHash.insert(new Syllable(temp.replace("-", ""), false)));
+				output.add(new Syllable(temp.replace("-", ""), false));
 				aSyllables = aSyllables.substring(temp.length());
-			} else if (st1Mat.matches()) {
-	System.out.println("		stress1");
+			} else if (st1Mat.matches()) { //  '- stress pattern
 				String temp = st1Mat.group(1);
-				output.add(SyllableHash.insert(new Syllable(temp.replace("'-", ""), true)));
+				output.add(new Syllable(temp.replace("'-", ""), true));
 				aSyllables = aSyllables.substring(temp.length());
-			} else if (st2Mat.matches()) {
-	System.out.println("					stress2");
+			} else if (st2Mat.matches()) { //  ' stress pattern
 				String temp = st2Mat.group(1);
-				output.add(SyllableHash.insert(new Syllable(temp.replace("'", ""), true)));
+				output.add(new Syllable(temp.replace("'", ""), true));
 				aSyllables = aSyllables.substring(temp.length());
 			} else {
-				output.add(SyllableHash.insert(new Syllable(aSyllables, false)));
+				output.add(new Syllable(aSyllables, false));
 				break;
 			}
 
@@ -216,6 +210,14 @@ public class PronunciationEntry {
 			st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
 		}
 
+		return output;
+	}
+	
+	private static List<SyllableKey> getKeyEncodeSyllables(List<Syllable> aSyllableList) {
+		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
+		for (Syllable syllable : aSyllableList) {
+			output.add(SyllableHash.insert(syllable));
+		}
 		return output;
 	}
 	
@@ -257,20 +259,12 @@ public class PronunciationEntry {
 	 * Returns a concetenation of the aStart, aStart+1, ..., aEnd strings
 	 * in the argument String array
 	 */
-	private static String subSyll(String[] aSyllables, int aStart, int aEnd) {
+	private static String subSyll(List<Syllable> aSyllables, int aStart, int aEnd) {
 		StringBuilder buff = new StringBuilder();
 		for (int i = aStart; i <= aEnd; i ++) {
-			buff.append(aSyllables[i]);
+			buff.append(aSyllables.get(i));
 		}
 		return buff.toString();
 	}
 
-	public static void main(String[] args) {
-		// (nōō'fən-lənd, -lānd', -fənd-, nyōō'-) 
-//		System.out.println(	determineSyllables("nōō'fən-lənd", "-fənd-"));
-//		System.out.println(	determineSyllables("nōō'fən-lənd", "-lend'"));
-		System.out.println(	editDistance("āb","ābəlōnē"));
-		System.out.println(	editDistance("ābəlōnē","āb"));
-	}
-	
 }

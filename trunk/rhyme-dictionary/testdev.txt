@@ -1,3 +1,7 @@
+test1	(ro-cham-bo')
+test2	(no-cham-bo)
+test3	(yes-cham-bo')
+test4	(ro-chamge-bo')
 abalone	(āb'ə-lō'nē, āb'ə-lō'-) 
 abandoner	(ə-bān'dən) 
 abatis	(āb'ə-tē', -tĭs) 
