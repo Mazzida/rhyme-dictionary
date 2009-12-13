@@ -19,7 +19,7 @@ public class RhymeQueryTest {
 		
 //		curResult = RhymeQueryHandler.getRhymes("video");
 		for (String result : curResult) {
-			System.out.println(result);
+//			System.out.println(result);
 		}
 
 	}
