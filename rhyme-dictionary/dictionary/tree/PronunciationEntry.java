@@ -79,9 +79,10 @@ public class PronunciationEntry {
 	}
 
 	public List<SyllableKey> getReverseSyllables() {
-		List<SyllableKey> output = new ArrayList<SyllableKey>();
-		Collections.copy(syllables, output);
-		Collections.reverse(output);
+		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
+		for (SyllableKey aKey : syllables) {
+			output.addFirst(aKey);
+		}
 		return output;
 	}
 

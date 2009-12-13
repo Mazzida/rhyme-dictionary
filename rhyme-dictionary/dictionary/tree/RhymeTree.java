@@ -48,8 +48,6 @@ public class RhymeTree {
 			curNode.getAllWords(output);
 			curNode = curNode.parent;
 		}
-		toString();
-		System.out.println(toString());
 		return output;
 	}
 
@@ -98,7 +96,7 @@ public class RhymeTree {
 				return output;
 			} else {
 				for (RhymeTreeNode child : childList) {
-					if (child.syllableValue == aKey) {
+					if (child.syllableValue.equals(aKey)) {
 						return child;
 					}
 				}
