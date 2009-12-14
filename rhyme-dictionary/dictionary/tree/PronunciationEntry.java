@@ -1,8 +1,6 @@
 package dictionary.tree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -122,8 +120,8 @@ public class PronunciationEntry {
 		}
 
 		ArrayList<Syllable> origSyl = getParsedSyllables(original);
-		String strippedReplace = replace.replaceAll(SYLLABLE_SPLIT_REGEX, "");
 		ArrayList<Syllable> repSyl = getParsedSyllables(replace);
+		String strippedReplace = subSyll(repSyl, 0, repSyl.size()-1);
 		
 		int repLen = repSyl.size();
 		int bestCost = Integer.MAX_VALUE;
@@ -145,8 +143,8 @@ public class PronunciationEntry {
 			}			
 		} else if (!notLast) {
 			// last - endPos is last char of original
+			int endPos = origSyl.size() - 1;
 			for (int startPos = 0; startPos < origSyl.size(); startPos ++ ) {
-				int endPos = origSyl.size() - 1;
 				String curSubString = subSyll(origSyl, startPos, endPos);
 				curCost = editDistance(curSubString, strippedReplace);
 				curCost += getSyllablePenalty(repLen, 1 + endPos - startPos);
@@ -188,7 +186,7 @@ public class PronunciationEntry {
 		Matcher st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
 		Matcher st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
 
-		while( true ) {
+		while( aSyllables.length() > 0 ) {
 			if (norMat.matches()) { //  - stress pattern
 				String temp = norMat.group(1);
 				output.add(new Syllable(temp.replace("-", ""), false));
