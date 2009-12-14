@@ -108,11 +108,17 @@ public class RhymeTree {
 
 		private String toRecursiveString(String accumulatedString) {
 			String output = "";
-			if (isTerminating != null)
-				return SyllableHash.get(syllableValue).toString() + accumulatedString + "\t\t" + isTerminating + "\n";
+			if (isTerminating != null) {
+				String lastSyl = SyllableHash.get(syllableValue).toString(); 
+				return lastSyl + accumulatedString + "\t" + isTerminating + "\n";
+			}
 			if (childList != null) {
+				String syllable = SyllableHash.get(syllableValue).toString();
+				if (parent == root && syllable.endsWith("-")) {
+					syllable = syllable.substring(0, syllable.length() - 1);
+				}
 				for (RhymeTreeNode child : childList) {
-					output += child.toRecursiveString(SyllableHash.get(syllableValue) + accumulatedString);
+					output += child.toRecursiveString(syllable + accumulatedString);
 				}
 			}
 			return output;
