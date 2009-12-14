@@ -169,17 +169,17 @@ public class PronunciationEntry {
 			}
 		}
 
-		StringBuilder output = new StringBuilder();
+		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
 
 		for (int i = 0; i < bestPosStart; i ++)
-			output.append(origSyl.get(i));
+			output.addLast(SyllableHash.insert(origSyl.get(i)));
 		for (int i = 0; i < repSyl.size(); i ++)
-			output.append(repSyl.get(i));
+			output.addLast(SyllableHash.insert(repSyl.get(i)));
 		for (int i = 0; i < origSyl.size() - bestPosEnd - 1; i ++) 
-			output.append(origSyl.get(bestPosEnd+1+i));
+			output.addLast(SyllableHash.insert(origSyl.get(bestPosEnd+1+i)));
 		System.out.println("output: " + output); //TODO remove
 
-		return getKeyEncodeSyllables(getParsedSyllables(output.toString()));
+		return output;
 	}
 
 	private static ArrayList<Syllable> getParsedSyllables(String aSyllables) {
