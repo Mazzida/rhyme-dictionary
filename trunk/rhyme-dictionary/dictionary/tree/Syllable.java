@@ -21,9 +21,13 @@ public class Syllable {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Print the pronunciation string plus appropriate stress/delimitation
+	 * unless this is the null syllable
+	 */
 	public String toString() {
-		return syllable + (stressed ? "'" : "");
+		return syllable + ((this == NULL) ? "" : (stressed ? "'" : "-"));
 	}
 
 	public String toPlainString() {
