@@ -175,7 +175,6 @@ public class PronunciationEntry {
 			output.addLast(SyllableHash.insert(repSyl.get(i)));
 		for (int i = 0; i < origSyl.size() - bestPosEnd - 1; i ++) 
 			output.addLast(SyllableHash.insert(origSyl.get(bestPosEnd+1+i)));
-		System.out.println("output: " + output); //TODO remove
 
 		return output;
 	}
