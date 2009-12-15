@@ -2,6 +2,9 @@ package dictionary.tree;
 
 public class Syllable {
 
+	private static final String VOWEL_REGEX = "[aäāeəēěiīĭoōŏôuûŭ]";
+	private static final String CONSONANT_REGEX = "[^aäāeəēěiīĭoōŏôuûŭ]";
+	
 	private String syllable;
 	private boolean stressed;
 
@@ -36,6 +39,14 @@ public class Syllable {
 
 	public boolean isStressed() {
 		return stressed;
+	}
+
+	public static boolean similarVowelSound(Syllable aSyl1, Syllable aSyl2) {
+		String syl1 = aSyl1.toPlainString();
+		String syl2 = aSyl2.toPlainString();
+		syl1 = syl1.replaceAll(CONSONANT_REGEX, "");
+		syl2 = syl2.replaceAll(CONSONANT_REGEX, "");
+		return syl1.equals(syl2);
 	}
 
 	public static final Syllable NULL = new Syllable("", false);
