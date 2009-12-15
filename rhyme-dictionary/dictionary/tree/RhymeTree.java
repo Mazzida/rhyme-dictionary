@@ -44,11 +44,33 @@ public class RhymeTree {
 		if (curNode == null)
 			return null;
 		
-		while (curNode != root) {
-			curNode.getAllWords(output);
+		while (curNode != root && curNode.parent != root) {
 			curNode = curNode.parent;
 		}
+		curNode.getAllWords(output);
+
 		return output;
+	}
+
+	public Set<String> getStrictRhymes(String aWord) {
+		TreeSet<String> output = new TreeSet<String>();
+		RhymeTreeNode curNode = wordPronunciation.get(aWord);
+
+		// that word is not in this list
+		if (curNode == null)
+			return null;
+
+		RhymeTreeNode lastStress = curNode;
+		while (curNode != root) {
+			if (curNode.isStressed()) {
+				lastStress = curNode;
+			}
+			curNode = curNode.parent;
+		}
+		
+		lastStress.getAllWords(output);
+
+		return output;		
 	}
 
 	public String toString() {
@@ -122,6 +144,10 @@ public class RhymeTree {
 				}
 			}
 			return output;
+		}
+		
+		private boolean isStressed() {
+			return SyllableHash.get(syllableValue).isStressed();
 		}
 	}
 
