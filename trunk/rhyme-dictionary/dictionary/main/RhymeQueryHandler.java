@@ -22,4 +22,8 @@ public class RhymeQueryHandler {
 		return singleton.trie.getRhymes(aWord);
 	}
 
+	public static Set<String> getStrictRhymes(String aWord) {
+		return singleton.trie.getStrictRhymes(aWord);
+	}
+
 }

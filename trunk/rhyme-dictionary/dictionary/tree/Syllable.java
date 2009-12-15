@@ -34,6 +34,10 @@ public class Syllable {
 		return syllable;
 	}
 
+	public boolean isStressed() {
+		return stressed;
+	}
+
 	public static final Syllable NULL = new Syllable("", false);
 
 }
