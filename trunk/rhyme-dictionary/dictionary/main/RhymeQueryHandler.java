@@ -19,8 +19,6 @@ public class RhymeQueryHandler {
 	}
 
 	public static Set<String> getRhymes(String aWord) {
-		System.out.println(singleton.trie.toString()); //TODO remove
-		System.out.println("\n\n"); //TODO remove
 		return singleton.trie.getRhymes(aWord);
 	}
 
