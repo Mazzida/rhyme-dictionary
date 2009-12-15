@@ -2,6 +2,7 @@ package dictionary.tree;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,8 +68,12 @@ public class RhymeTree {
 			}
 			curNode = curNode.parent;
 		}
-		
-		lastStress.getAllWords(output);
+
+		for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelSiblings()) {
+			if (SyllableHash.get(eligibleSibling.syllableValue).isStressed()) {
+				eligibleSibling.getAllWords(output);				
+			}
+		}
 
 		return output;		
 	}
@@ -145,7 +150,25 @@ public class RhymeTree {
 			}
 			return output;
 		}
-		
+
+//		private Set<RhymeTreeNode> getSimilarConsonantSiblings() {
+//			//TODO
+//		}
+
+		private Set<RhymeTreeNode> getSimilarVowelSiblings() {
+			Set<RhymeTreeNode> output = new HashSet<RhymeTreeNode>();
+			if (parent == null || parent.childList == null) {
+				return output;
+			}
+			Syllable syllable = SyllableHash.get(syllableValue);
+			for (RhymeTreeNode sibling : parent.childList) {
+				if (Syllable.similarVowelSound(SyllableHash.get(sibling.syllableValue), syllable)) {
+					output.add(sibling);
+				}
+			}
+			return output;
+		}
+
 		private boolean isStressed() {
 			return SyllableHash.get(syllableValue).isStressed();
 		}

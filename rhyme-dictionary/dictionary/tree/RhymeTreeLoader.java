@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class RhymeTreeLoader {
 
-//	private static final String PRONUNCIATION_DICTIONARY = "pronunciations.txt";
-	private static final String PRONUNCIATION_DICTIONARY = "testdev.txt";
+	private static final String PRONUNCIATION_DICTIONARY = "pronunciations.txt";
+//	private static final String PRONUNCIATION_DICTIONARY = "testdev.txt";
 
 	public static RhymeTree loadTree() {
 		RhymeTree tree = new RhymeTree();

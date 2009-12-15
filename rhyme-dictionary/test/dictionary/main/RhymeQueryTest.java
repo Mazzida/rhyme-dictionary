@@ -12,7 +12,7 @@ public class RhymeQueryTest {
 	@Test
 	public void testLoader() {
 		Collection<String> curResult;
-		curResult = RhymeQueryHandler.getStrictRhymes("hamburger");
+		curResult = RhymeQueryHandler.getStrictRhymes("macaroni");
 		for (String result : curResult) {
 			System.out.println(result);
 		}
