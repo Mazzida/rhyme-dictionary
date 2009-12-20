@@ -78,6 +78,29 @@ public class RhymeTree {
 		return output;		
 	}
 
+	public String getPronunciation(String aWord) {
+		StringBuilder output = new StringBuilder();
+		RhymeTreeNode curNode = wordPronunciation.get(aWord);
+
+		// that word is not in this list
+		if (curNode == null)
+			return null;
+
+		while (curNode != root) {
+			output.append(SyllableHash.get(curNode.syllableValue));
+			curNode = curNode.parent;
+		}
+
+		// strip trailing delimiter if present
+		int delimIndex = output.lastIndexOf("-"); 
+		int length = output.length();
+		if (length > 0 && delimIndex == length-1) {
+			output.deleteCharAt(delimIndex);			
+		}
+
+		return output.toString();
+	}
+	
 	public String toString() {
 		return root.toRecursiveString("");
 	}

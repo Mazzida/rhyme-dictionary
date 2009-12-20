@@ -21,7 +21,9 @@ public class RhymeDictionaryCLI {
 			if (command.matches("-s \\w+")) {
 				command = command.substring(3);
 				process(command);
-			} else if (command.matches("")) {
+			} else if (command.matches("-p \\w+")) {
+				command = command.substring(3);
+				pronunciation(command);
 			} else {
 				printHelp();
 			}
@@ -52,6 +54,15 @@ public class RhymeDictionaryCLI {
 			}
 		} else {
 			System.out.println();
+		}
+	}
+	
+	private static void pronunciation(String aWord) {
+		String pronunciation = RhymeQueryHandler.getPronunciation(aWord);
+		if (pronunciation != null) {
+			System.out.println(pronunciation);
+		} else {
+			System.err.println("word not found");
 		}
 	}
 }
