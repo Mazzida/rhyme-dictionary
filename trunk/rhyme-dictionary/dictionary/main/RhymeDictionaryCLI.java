@@ -9,7 +9,7 @@ public class RhymeDictionaryCLI {
 	
 	public static void start() {
 		Scanner inScanner = new Scanner(System.in);
-		printPrompt();
+		load();
 		while (inScanner.hasNextLine()) {
 			String command = inScanner.nextLine();
 
@@ -27,6 +27,13 @@ public class RhymeDictionaryCLI {
 			}
 			printPrompt();
 		}
+	}
+	
+	private static void load() {
+		System.out.println("loading dictionary..");
+		RhymeQueryHandler.touch();
+		System.out.println("load complete");
+		printPrompt();
 	}
 
 	private static void printHelp() {

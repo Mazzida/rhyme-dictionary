@@ -35,5 +35,9 @@ public class RhymeQueryHandler {
 	public static Set<String> getStrictRhymes(String aWord) {
 		return singleton.trie.getStrictRhymes(aWord);
 	}
+	
+	public static void touch() {
+		
+	}
 
 }
