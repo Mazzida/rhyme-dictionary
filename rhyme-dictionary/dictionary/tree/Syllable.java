@@ -2,8 +2,8 @@ package dictionary.tree;
 
 public class Syllable {
 
-	private static final String VOWEL_REGEX = "[aäāeəēěiīĭoōŏôuûŭ]";
-	private static final String CONSONANT_REGEX = "[^aäāeəēěiīĭoōŏôuûŭ]";
+	private static final String VOWEL_REGEX = "[aäāâeəēěiīĭîoōŏôuûŭ]";
+	private static final String CONSONANT_REGEX = "[^aäāâeəēěiīĭîoōŏôuûŭ]";
 	
 	private String syllable;
 	private boolean stressed;
@@ -46,6 +46,24 @@ public class Syllable {
 		String syl2 = aSyl2.toPlainString();
 		syl1 = syl1.replaceAll(CONSONANT_REGEX, "");
 		syl2 = syl2.replaceAll(CONSONANT_REGEX, "");
+		return syl1.equals(syl2);
+	}
+
+	public static boolean similarVowelAndTrailingSounds(Syllable aSyl1, Syllable aSyl2) {
+		String syl1 = aSyl1.toPlainString();
+		String syl2 = aSyl2.toPlainString();
+
+		if (syl1.matches(CONSONANT_REGEX + "*") || syl2.matches(CONSONANT_REGEX + "*")) {
+			return syl1.equals(syl2);
+		}
+		
+		while (String.valueOf(syl1.charAt(0)).matches(CONSONANT_REGEX)) {
+			syl1 = syl1.substring(1);
+		}
+		while (String.valueOf(syl2.charAt(0)).matches(CONSONANT_REGEX)) {
+			syl2 = syl2.substring(1);
+		}
+		
 		return syl1.equals(syl2);
 	}
 

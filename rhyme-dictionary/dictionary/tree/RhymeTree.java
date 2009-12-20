@@ -69,9 +69,9 @@ public class RhymeTree {
 			curNode = curNode.parent;
 		}
 
-		for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelSiblings()) {
+		for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelAndTrailingSoundSiblings()) {
 			if (SyllableHash.get(eligibleSibling.syllableValue).isStressed()) {
-				eligibleSibling.getAllWords(output);				
+				eligibleSibling.getAllWords(output);
 			}
 		}
 
@@ -155,14 +155,14 @@ public class RhymeTree {
 //			//TODO
 //		}
 
-		private Set<RhymeTreeNode> getSimilarVowelSiblings() {
+		private Set<RhymeTreeNode> getSimilarVowelAndTrailingSoundSiblings() {
 			Set<RhymeTreeNode> output = new HashSet<RhymeTreeNode>();
 			if (parent == null || parent.childList == null) {
 				return output;
 			}
 			Syllable syllable = SyllableHash.get(syllableValue);
 			for (RhymeTreeNode sibling : parent.childList) {
-				if (Syllable.similarVowelSound(SyllableHash.get(sibling.syllableValue), syllable)) {
+				if (Syllable.similarVowelAndTrailingSounds(SyllableHash.get(sibling.syllableValue), syllable)) {
 					output.add(sibling);
 				}
 			}
