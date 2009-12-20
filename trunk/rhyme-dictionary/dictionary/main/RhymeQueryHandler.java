@@ -36,6 +36,10 @@ public class RhymeQueryHandler {
 		return singleton.trie.getStrictRhymes(aWord);
 	}
 	
+	public static String getPronunciation(String aWord) {
+		return singleton.trie.getPronunciation(aWord);
+	}
+	
 	public static void touch() {
 		
 	}
