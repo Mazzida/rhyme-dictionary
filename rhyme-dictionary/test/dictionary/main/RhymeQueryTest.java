@@ -1,5 +1,7 @@
 package test.dictionary.main;
 
+import static org.junit.Assert.*;
+
 import java.util.Collection;
 
 import org.junit.Test;
@@ -12,16 +14,17 @@ public class RhymeQueryTest {
 	@Test
 	public void testLoader() {
 		Collection<String> curResult;
-		curResult = RhymeQueryHandler.getStrictRhymes("macaroni");
-		for (String result : curResult) {
-			System.out.println(result);
-		}
+		String[] testWords = {"pancake","teapot", "almond", "rosebud", "lipstick", "charter"};
 		
-//		curResult = RhymeQueryHandler.getRhymes("video");
-		for (String result : curResult) {
-//			System.out.println(result);
+		
+		for (String testWord : testWords) {
+			curResult = RhymeQueryHandler.getStrictRhymes(testWord);
+			System.out.println("testing: " + testWord);
+			assertTrue("word not found: " + testWord, curResult != null);
+			for (String result : curResult) {
+				System.out.println("	" + result);
+			}	
 		}
-
 	}
 
 }
