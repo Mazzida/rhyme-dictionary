@@ -60,7 +60,7 @@ public class RhymeDictionaryCLI {
 	private static void pronunciation(String aWord) {
 		String pronunciation = RhymeQueryHandler.getPronunciation(aWord);
 		if (pronunciation != null) {
-			System.out.println(pronunciation);
+			System.out.print(pronunciation);
 		} else {
 			System.err.println("word not found");
 		}
