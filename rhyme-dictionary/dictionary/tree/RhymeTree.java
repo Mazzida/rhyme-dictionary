@@ -3,6 +3,7 @@ package dictionary.tree;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class RhymeTree {
 	 * Map from word strings to syllable pronunciation node from which one can traverse
 	 * back-pointers to collect the entire word's pronunciation
 	 */
-	private Map<String, RhymeTreeNode> wordPronunciation = new HashMap<String, RhymeTreeNode>();
+	private Map<String, LinkedList<RhymeTreeNode>> wordPronunciation = new HashMap<String, LinkedList<RhymeTreeNode>>();
 
 	public RhymeTree() {
 		root = new RhymeTreeNode(null, SyllableKey.NULL);
@@ -32,46 +33,60 @@ public class RhymeTree {
 			curNode = curNode.getChild(syllableKey);
 		}
 		curNode.setEndNode(aPronunciation.getWord());
-		wordPronunciation.put(aPronunciation.getWord(), curNode);
+		
+		String word = aPronunciation.getWord();
+		if (wordPronunciation.get(word) == null) {
+			wordPronunciation.put(word, new LinkedList<RhymeTreeNode>());
+		}
+		LinkedList<RhymeTreeNode> list = wordPronunciation.get(word);
+		if (!list.contains(curNode)) {
+			list.addLast(curNode);
+		}
 
 		return true;
 	}
 
 	public Set<String> getRhymes(String aWord) {
+		LinkedList<RhymeTreeNode> nodeList;
 		TreeSet<String> output = new TreeSet<String>();
-		RhymeTreeNode curNode = wordPronunciation.get(aWord);
-
+		nodeList = wordPronunciation.get(aWord);
 		// that word is not in this list
-		if (curNode == null)
+		if (nodeList == null) {
 			return null;
-		
-		while (curNode != root && curNode.parent != root) {
-			curNode = curNode.parent;
 		}
-		curNode.getAllWords(output);
+		
+		for (RhymeTreeNode curNode : nodeList) {			
+			while (curNode != root && curNode.parent != root) {
+				curNode = curNode.parent;
+			}
+			curNode.getAllWords(output);			
+		}
 
 		return output;
 	}
 
 	public Set<String> getStrictRhymes(String aWord) {
+		LinkedList<RhymeTreeNode> nodeList;
 		TreeSet<String> output = new TreeSet<String>();
-		RhymeTreeNode curNode = wordPronunciation.get(aWord);
-
+		nodeList = wordPronunciation.get(aWord);
 		// that word is not in this list
-		if (curNode == null)
+		if (nodeList == null) {
 			return null;
-
-		RhymeTreeNode lastStress = curNode;
-		while (curNode != root) {
-			if (curNode.isStressed()) {
-				lastStress = curNode;
-			}
-			curNode = curNode.parent;
 		}
 
-		for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelAndTrailingSoundSiblings()) {
-			if (SyllableHash.get(eligibleSibling.syllableValue).isStressed()) {
-				eligibleSibling.getAllWords(output);
+		for (RhymeTreeNode curNode : nodeList) {			
+			RhymeTreeNode lastStress = curNode;
+			while (curNode != root) {
+				if (curNode.isStressed()) {
+					lastStress = curNode;
+				}
+				curNode = curNode.parent;
+			}
+
+			for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelAndTrailingSoundSiblings()) {
+				if (SyllableHash.get(eligibleSibling.syllableValue).isStressed()) {
+					eligibleSibling.getAllWords(output);
+				}
 			}
 		}
 
@@ -80,22 +95,26 @@ public class RhymeTree {
 
 	public String getPronunciation(String aWord) {
 		StringBuilder output = new StringBuilder();
-		RhymeTreeNode curNode = wordPronunciation.get(aWord);
-
+		LinkedList<RhymeTreeNode> nodeList;
+		nodeList = wordPronunciation.get(aWord);
 		// that word is not in this list
-		if (curNode == null)
+		if (nodeList == null) {
 			return null;
-
-		while (curNode != root) {
-			output.append(SyllableHash.get(curNode.syllableValue));
-			curNode = curNode.parent;
 		}
 
-		// strip trailing delimiter if present
-		int delimIndex = output.lastIndexOf("-"); 
-		int length = output.length();
-		if (length > 0 && delimIndex == length-1) {
-			output.deleteCharAt(delimIndex);			
+		for (RhymeTreeNode curNode : nodeList) {
+			while (curNode != root) {
+				output.append(SyllableHash.get(curNode.syllableValue));
+				curNode = curNode.parent;
+			}
+
+			// strip trailing delimiter if present
+			int delimIndex = output.lastIndexOf("-"); 
+			int length = output.length();
+			if (length > 0 && delimIndex == length-1) {
+				output.deleteCharAt(delimIndex);			
+			}
+			output.append('\n');
 		}
 
 		return output.toString();
