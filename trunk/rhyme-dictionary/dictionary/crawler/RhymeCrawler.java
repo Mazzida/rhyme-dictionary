@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -70,10 +71,10 @@ public abstract class RhymeCrawler {
 		return null;
 	}
 
-	private synchronized void writeEntry(String entry) {
+	private synchronized void writeEntry(PronunciationResult entry) {
 		if (entry != null) {
 			try {
-				writer.write(entry + '\n');
+				writer.write(entry.toString() + '\n');
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -82,7 +83,7 @@ public abstract class RhymeCrawler {
 
 	protected abstract String getSearchUrlString(String word);
 
-	protected abstract String processPageUrl(String word, String contents);
+	protected abstract List<PronunciationResult> processPageUrl(String contents);
 
 	class Runner extends Thread {
 		Scanner goal;
@@ -104,15 +105,15 @@ public abstract class RhymeCrawler {
 				while (goal.hasNextLine()) {
 					contents.append(goal.nextLine()).append('\n');
 				}
-				String pronunciation = processPageUrl(curWord, contents.toString());
-				if (pronunciation != null) {
-					String entry = curWord + '\t' + pronunciation;
-					writeEntry(entry);					
+				List<PronunciationResult> pronunciationList = processPageUrl(contents.toString());
+				if (pronunciationList != null) {
+					for (PronunciationResult result : pronunciationList) {
+						writeEntry(result);
+					}
 				}
 			} catch (Exception e) {
 				System.err.println("ERROR: run()" + e.getLocalizedMessage());
 			}
-
 		}
 	}
 	
