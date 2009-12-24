@@ -1,5 +1,6 @@
 package dictionary.crawler;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +12,7 @@ public class MerriamWebsterDotComCrawler extends RhymeCrawler {
 	}
 
 	@Override
-	public String processPageUrl(String word, String contents) {
+	public List<PronunciationResult> processPageUrl(String contents) {
 		String proString;
 		Pattern prPat = Pattern.compile(".*Pronunciation:(.*?)Function:.*", Pattern.DOTALL);
 		Matcher prMat = prPat.matcher(contents);
@@ -21,8 +22,7 @@ public class MerriamWebsterDotComCrawler extends RhymeCrawler {
 		} else {
 			return null;
 		}
-		System.out.println(word + " : " + proString);
-		return proString;
+		return null;
 	}
 
 }
