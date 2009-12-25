@@ -105,6 +105,7 @@ public abstract class RhymeCrawler {
 				while (goal.hasNextLine()) {
 					contents.append(goal.nextLine()).append('\n');
 				}
+				goal.close();
 				List<PronunciationResult> pronunciationList = processPageUrl(contents.toString());
 				if (pronunciationList != null) {
 					for (PronunciationResult result : pronunciationList) {
