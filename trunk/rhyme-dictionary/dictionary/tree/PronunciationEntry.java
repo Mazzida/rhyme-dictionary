@@ -21,6 +21,8 @@ public class PronunciationEntry {
 	private static final String SYLLABLE_NORMAL_PATTERN = "([^-']+?-).*";
 	private static final String SYLLABLE_STRESS_PATTERN_1 = "([^-']+?'-).*";
 	private static final String SYLLABLE_STRESS_PATTERN_2 = "([^-']+?').*";
+	private static final String ENTRY_CAPTURE_PATTERN = "(.*?)\t\\((.*)\\)";
+	private static final String WORD_SPLIT_REGEX = "(?: or )|(?: also )";
 
 
 	private String word;
@@ -40,23 +42,25 @@ public class PronunciationEntry {
 		ArrayList<PronunciationEntry> output = new ArrayList<PronunciationEntry>();
 		aEntryString = aEntryString.trim();
 		PronunciationEntry tEntry;
-		String word;
-		Pattern prPat = Pattern.compile("(.*?)\t\\((.*)\\)", Pattern.DOTALL);
+		Pattern prPat = Pattern.compile(ENTRY_CAPTURE_PATTERN, Pattern.DOTALL);
 		Matcher prMat = prPat.matcher(aEntryString);
 
 		if (prMat.matches()) {
-			word = prMat.group(1);
 			String prString = prMat.group(2);
 			String[] list = prString.split(", ");
+			String[] wordList = prMat.group(1).split(WORD_SPLIT_REGEX);
 			String primary = list[0];
 
-			tEntry = new PronunciationEntry(word, primary);
+			tEntry = new PronunciationEntry(wordList[0], primary);
 			output.add(tEntry);
 
-			for (int altInd = 1; altInd < list.length; altInd ++) {
-				String alternate = list[altInd];
-				tEntry = new PronunciationEntry(word, primary, alternate);
-				output.add(tEntry);
+			for (int wordIndex = 1; wordIndex < wordList.length; wordIndex++) {
+				String word = wordList[wordIndex];
+				for (int altInd = 1; altInd < list.length; altInd ++) {
+					String alternate = list[altInd];
+					tEntry = new PronunciationEntry(word, primary, alternate);
+					output.add(tEntry);
+				}				
 			}
 		} else {
 			throw new IllegalArgumentException("Failed Parse: " + aEntryString);
@@ -254,7 +258,7 @@ public class PronunciationEntry {
 	}
 	
 	/**
-	 * Returns a concetenation of the aStart, aStart+1, ..., aEnd strings
+	 * Returns a concatenation of the aStart, aStart+1, ..., aEnd strings
 	 * in the argument String array
 	 */
 	private static String subSyll(List<Syllable> aSyllables, int aStart, int aEnd) {
