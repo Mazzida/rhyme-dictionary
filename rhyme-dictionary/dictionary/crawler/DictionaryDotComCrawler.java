@@ -7,6 +7,11 @@ import java.util.regex.Pattern;
 
 public class DictionaryDotComCrawler extends RhymeCrawler {
 
+	private static String NAME_AND_PRONUNCIATION_PATTERN = ".*<b>((.*?)(?:<sup>.*?</sup>.*)?</b>.*?&nbsp;&nbsp;(.*?)&nbsp;<a title=\"Click for guide to symbols.\").*";
+//	Pattern prPat = Pattern.compile(".*Pronunciation: <tt>'(.*?)</tt>.*", Pattern.DOTALL);
+//	Pattern prPat = Pattern.compile(".*<span class=\"pron\">(.*?)</span><span class=\"prondelim\">].*", Pattern.DOTALL);
+
+	
 	@Override
 	protected String getSearchUrlString(String word) {
 		return "http://dictionary.reference.com/browse/" + word;
@@ -15,25 +20,23 @@ public class DictionaryDotComCrawler extends RhymeCrawler {
 	@Override
 	public List<PronunciationResult> processPageUrl(String contents) {
 		List<PronunciationResult> resultList = new ArrayList<PronunciationResult>();
-//		Pattern prPat = Pattern.compile(".*Pronunciation: <tt>'(.*?)</tt>.*", Pattern.DOTALL);
-//		Pattern prPat = Pattern.compile(".*<span class=\"pron\">(.*?)</span><span class=\"prondelim\">].*", Pattern.DOTALL);
-		Pattern prPat = Pattern.compile(".*&nbsp;&nbsp;(.*?)&nbsp;<a title=\"Click for guide to symbols.\".*", Pattern.DOTALL);
+		Pattern prPat = Pattern.compile(NAME_AND_PRONUNCIATION_PATTERN, Pattern.DOTALL);
 		Matcher prMat = prPat.matcher(contents);
-		//works for scientific dictionary case
-Pattern testPat = Pattern.compile(".*<b>(.*?)(?:<sup>.*?</sup>.*)?</b>.*?&nbsp;&nbsp;(.*?)&nbsp;<a title=\"Click for guide to symbols.\".*", Pattern.DOTALL);
-Matcher testMat = testPat.matcher(contents);
 
-		if (prMat.matches() && testMat.matches()) {
-			PronunciationResult result;
-			String word = "";
-			String pronunciation = HtmlUtil.stripTags(prMat.group(1));
-			result = new PronunciationResult(word, pronunciation);
-			System.out.println(result);
-			System.out.println(testMat.group(1));
-		} else {
-			return null;
+		while (prMat.matches()) {
+			String word = cleanupWord(prMat.group(2));
+			String pronunciation = HtmlUtil.stripTags(prMat.group(3));
+			String toStrip = prMat.group(1);
+			resultList.add(new PronunciationResult(word, pronunciation));
+			System.out.println(new PronunciationResult(word, pronunciation));
+			contents = contents.replace(toStrip, "");
+			prMat = prPat.matcher(contents);
 		}
 		return resultList;
+	}
+
+	public String cleanupWord(String aWordString) {
+		return aWordString.replaceAll("·","");
 	}
 
 }
