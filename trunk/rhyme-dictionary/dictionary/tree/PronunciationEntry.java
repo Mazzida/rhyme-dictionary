@@ -59,7 +59,7 @@ public class PronunciationEntry {
 				output.add(tEntry);
 			}
 		} else {
-			throw new IllegalArgumentException("Failed Parse: ");
+			throw new IllegalArgumentException("Failed Parse: " + aEntryString);
 		}
 
 		return output;
