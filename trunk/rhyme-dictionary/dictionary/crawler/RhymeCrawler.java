@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
@@ -14,6 +15,7 @@ import java.util.Vector;
 public abstract class RhymeCrawler {
 
 	private static final int THREADCOUNT = 20;
+	private static final int URL_RETRY_MAX = 10;
 	private static final String WORD_FILE_NAME = "wordlist_text.txt";
 	private static final String RHYME_FILE_NAME = "rhyme_text.txt";
 	private BufferedReader reader;
@@ -97,25 +99,39 @@ public abstract class RhymeCrawler {
 		}
 		
 		private void processString(String curWord) {
+			String urlString;
 			URL curURL;
+			InputStream inStream;
 			StringBuilder contents = new StringBuilder();
-			try {
-				curURL = new URL(getSearchUrlString(curWord));
-				goal = new Scanner(curURL.openStream());
-				while (goal.hasNextLine()) {
-					contents.append(goal.nextLine()).append('\n');
-				}
-				goal.close();
-				List<PronunciationResult> pronunciationList = processPageUrl(contents.toString());
-				if (pronunciationList != null) {
-					for (PronunciationResult result : pronunciationList) {
-						writeEntry(result);
+			urlString = getSearchUrlString(curWord);
+			for (int rep = 0; rep < URL_RETRY_MAX; rep ++) {
+				try {
+					curURL = new URL(urlString);
+					inStream = curURL.openStream();
+					goal = new Scanner(inStream);
+					while (goal.hasNextLine()) {
+						contents.append(goal.nextLine()).append('\n');
+					}
+					List<PronunciationResult> pronunciationList = processPageUrl(contents.toString());
+					if (pronunciationList != null) {
+						for (PronunciationResult result : pronunciationList) {
+							writeEntry(result);
+						}
+					}
+					break;
+				} catch (Exception e) {
+					System.err.print("ERROR: url retrieval number " + rep + ": " + urlString);
+					System.err.print("	" + e.getMessage());
+					try {
+						Thread.sleep(1500);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				} finally {
+					if (goal != null) {
+						goal.close();
 					}
 				}
-			} catch (Exception e) {
-				System.err.println("ERROR: run()" + e.getLocalizedMessage());
-			} finally {
-				goal.close();
 			}
 		}
 	}
