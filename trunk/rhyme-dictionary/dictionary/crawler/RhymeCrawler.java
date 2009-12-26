@@ -114,6 +114,8 @@ public abstract class RhymeCrawler {
 				}
 			} catch (Exception e) {
 				System.err.println("ERROR: run()" + e.getLocalizedMessage());
+			} finally {
+				goal.close();
 			}
 		}
 	}
