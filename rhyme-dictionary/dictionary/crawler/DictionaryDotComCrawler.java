@@ -28,7 +28,6 @@ public class DictionaryDotComCrawler extends RhymeCrawler {
 			String pronunciation = HtmlUtil.stripTags(prMat.group(3));
 			String toStrip = prMat.group(1);
 			resultList.add(new PronunciationResult(word, pronunciation));
-			System.out.println(new PronunciationResult(word, pronunciation));
 			contents = contents.replace(toStrip, "");
 			prMat = prPat.matcher(contents);
 		}
