@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
@@ -16,11 +17,13 @@ public abstract class RhymeCrawler {
 
 	private static final int THREADCOUNT = 20;
 	private static final int URL_RETRY_MAX = 10;
+	private static final int FLUSH_MS_INTERVAL = 10000;
 	private static final String WORD_FILE_NAME = "wordlist_text.txt";
 	private static final String RHYME_FILE_NAME = "rhyme_text.txt";
 	private BufferedReader reader;
 	private FileWriter writer;
 	private Vector<Runner> runnerList;
+	private long writeCount;
 
 	public RhymeCrawler() {
 		reset();
@@ -35,6 +38,8 @@ public abstract class RhymeCrawler {
 				tRunner.start();
 				runnerList.add(tRunner);
 			}
+			WriteOverseer tOverseer = new WriteOverseer();
+			tOverseer.start();
 			while (runnerList.size() != 0) {
 				Thread.sleep(1500);
 			}
@@ -46,6 +51,7 @@ public abstract class RhymeCrawler {
 
 	private void reset() {
 		try {
+			writeCount = 0;
 			reader = new BufferedReader(new FileReader(WORD_FILE_NAME));
 			writer = new FileWriter(RHYME_FILE_NAME);
 		} catch (Exception e) {
@@ -77,12 +83,21 @@ public abstract class RhymeCrawler {
 		if (entry != null) {
 			try {
 				writer.write(entry.toString() + '\n');
+				writeCount ++;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
+	private synchronized void writerFlush() {
+		try {
+			writer.flush();
+		} catch (IOException e) {
+			System.err.println("ERROR: writerflush(): " + e.getMessage());
+		}
+	}
+	
 	protected abstract String getSearchUrlString(String word);
 
 	protected abstract List<PronunciationResult> processPageUrl(String contents);
@@ -135,5 +150,18 @@ public abstract class RhymeCrawler {
 			}
 		}
 	}
-	
+
+	class WriteOverseer extends Thread {
+		public void run() {
+			while(runnerList.size() != 0) {
+				try {
+					writerFlush();
+					sleep(FLUSH_MS_INTERVAL);
+					System.out.printf("%s : %d word processed\n", new Date(System.currentTimeMillis()), writeCount);
+				} catch (Exception e) {
+					System.err.println("ERROR: flush failed: " + e.getMessage());
+				}
+			}
+		}
+	}
 }
