@@ -40,10 +40,9 @@ public abstract class RhymeCrawler {
 			}
 			WriteOverseer tOverseer = new WriteOverseer();
 			tOverseer.start();
-			while (runnerList.size() != 0) {
-				Thread.sleep(1500);
-			}
+			tOverseer.join();
 			writer.close();
+			System.out.println("CRAWL SESSION COMPLETE");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -135,8 +134,8 @@ public abstract class RhymeCrawler {
 					}
 					break;
 				} catch (Exception e) {
-					System.err.print("ERROR: url retrieval number " + rep + ": " + urlString);
-					System.err.print("	" + e.getMessage());
+					System.err.printf("ERROR: url retrieval number %s : %s\n", rep, urlString);
+					System.err.printf("\t%s\n", e.getMessage());
 					try {
 						Thread.sleep(1500);
 					} catch (InterruptedException e1) {
@@ -157,7 +156,7 @@ public abstract class RhymeCrawler {
 				try {
 					writerFlush();
 					sleep(FLUSH_MS_INTERVAL);
-					System.out.printf("%s : %d word processed\n", new Date(System.currentTimeMillis()), writeCount);
+					System.out.printf("%s : %d word processed\n", new Date(System.currentTimeMillis()), writeCount, runnerList.size());
 				} catch (Exception e) {
 					System.err.println("ERROR: flush failed: " + e.getMessage());
 				}
