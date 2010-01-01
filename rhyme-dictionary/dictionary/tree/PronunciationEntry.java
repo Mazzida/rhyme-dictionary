@@ -48,20 +48,16 @@ public class PronunciationEntry {
 		if (prMat.matches()) {
 			String prString = prMat.group(2);
 			String[] list = prString.split(", ");
-			String[] wordList = prMat.group(1).split(WORD_SPLIT_REGEX);
+			String word = prMat.group(1);
 			String primary = list[0];
-
-			tEntry = new PronunciationEntry(wordList[0], primary);
+			tEntry = new PronunciationEntry(word, primary);
 			output.add(tEntry);
 
-			for (int wordIndex = 1; wordIndex < wordList.length; wordIndex++) {
-				String word = wordList[wordIndex];
-				for (int altInd = 1; altInd < list.length; altInd ++) {
-					String alternate = list[altInd];
-					tEntry = new PronunciationEntry(word, primary, alternate);
-					output.add(tEntry);
-				}				
-			}
+			for (int altInd = 1; altInd < list.length; altInd ++) {
+				String alternate = list[altInd];
+				tEntry = new PronunciationEntry(word, primary, alternate);
+				output.add(tEntry);
+			}				
 		} else {
 			throw new IllegalArgumentException("Failed Parse: " + aEntryString);
 		}
@@ -231,6 +227,11 @@ public class PronunciationEntry {
 	private static int editDistance(String a, String b) {
 		int[] score = new int[b.length()];
 		int curScore;
+		if (a.length() == 0) {
+			return b.length() * EDIT_PENALTY_ADD;
+		} else if (b.length() == 0) {
+			return a.length() * EDIT_PENALTY_REMOVE;
+		}
 		for (int bInd = 0; bInd < b.length(); bInd ++) {
 			score[bInd] = bInd * EDIT_PENALTY_ADD;
 		}

@@ -21,6 +21,7 @@ public class RhymeTreeLoader {
 		} catch(Exception e) {
 			System.err.println("ERROR: tree load failure");
 			System.err.println(e.getLocalizedMessage());
+			e.printStackTrace();
 		}
 		return tree;
 	}
