@@ -7,7 +7,7 @@ public class Main {
 			RhymeDictionaryCLI.start();
 		} else {
 			for (String arg : args) {
-				RhymeDictionaryCLI.process(arg);
+				RhymeDictionaryCLI.respondStrictRhyme(arg);
 			}
 		}
 	}
