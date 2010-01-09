@@ -6,7 +6,10 @@ import java.util.Set;
 public class RhymeDictionaryCLI {
 
 	
-	
+	/**
+	 * Read from the standard input and handle the responses until 
+	 * the user closes the program.
+	 */
 	public static void start() {
 		Scanner inScanner = new Scanner(System.in);
 		load();
@@ -33,6 +36,20 @@ public class RhymeDictionaryCLI {
 		}
 	}
 
+	private static void load() {
+		System.out.println("loading dictionary..");
+		RhymeQueryHandler.touch();
+		System.out.println("load complete");
+		printPrompt();
+	}
+	
+	private static void respondUnrecognized() {
+		System.out.println("Unrecognized command.  Query '-h' or 'help' for help text.");
+	}
+
+	private static void printPrompt() {
+		System.out.print(">>");
+	}
 
 	private static boolean matchStrictRhyme(String aCommand) {
 		return aCommand.matches("-s \\w+");
@@ -48,21 +65,6 @@ public class RhymeDictionaryCLI {
 
 	private static boolean matchExit(String aCommand) {
 		return aCommand.contains("exit");
-	}
-
-	private static void load() {
-		System.out.println("loading dictionary..");
-		RhymeQueryHandler.touch();
-		System.out.println("load complete");
-		printPrompt();
-	}
-	
-	private static void respondUnrecognized() {
-		System.out.println("Unrecognized command.  Query '-h' or 'help' for help text.");
-	}
-
-	private static void printPrompt() {
-		System.out.print(">>");
 	}
 
 	public static void respondStrictRhyme(String command) {
@@ -89,6 +91,10 @@ public class RhymeDictionaryCLI {
 
 	private static void respondHelp() {
 		System.out.println("Usage:  ");
+		System.out.println("	-h	help	prints this help message");
+		System.out.println("	-p		returns the set of pronunciations for this word");
+		System.out.println("	-s		returns the set of strict rhyme results");
+		System.out.println("	exit		exits program");
 	}
 
 	private static void respondExit() {
