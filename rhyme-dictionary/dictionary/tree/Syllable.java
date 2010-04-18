@@ -2,6 +2,7 @@ package dictionary.tree;
 
 public class Syllable {
 
+	@SuppressWarnings("unused")
 	private static final String VOWEL_REGEX = "[aäāâeəēěiīĭîoōŏôuûŭ]";
 	private static final String CONSONANT_REGEX = "[^aäāâeəēěiīĭîoōŏôuûŭ]";
 	
