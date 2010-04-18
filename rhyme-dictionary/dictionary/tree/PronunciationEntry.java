@@ -1,6 +1,7 @@
 package dictionary.tree;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -26,7 +27,7 @@ public class PronunciationEntry {
 
 
 	private String word;
-	private List<SyllableKey> syllables;
+	private Pronunciation syllables;
 
 	public PronunciationEntry(String aWord, String aPrimary) {
 		word = aWord;
@@ -66,22 +67,11 @@ public class PronunciationEntry {
 	}
 
 	public String toString() {
-		String syllableVals = "";
-		for (SyllableKey syllable : syllables) {
-			syllableVals += SyllableHash.get(syllable) + "-";
-		}
-		if (syllableVals.endsWith("-")) {
-			syllableVals = syllableVals.substring(0, syllableVals.length()-1);
-		}
-		return String.format("[ %s, %s, %s ]", word, syllables.toString(), syllableVals);
+		return String.format("[ %s, %s ]", word, syllables.toString());
 	}
 
 	public List<SyllableKey> getReverseSyllables() {
-		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
-		for (SyllableKey aKey : syllables) {
-			output.addFirst(aKey);
-		}
-		return output;
+		return syllables.getReverseSyllables();
 	}
 
 	public String getWord() {
@@ -92,13 +82,13 @@ public class PronunciationEntry {
 	 * Figure out the correct replacement position and return the
 	 * alternate pronunciation syllable list
 	 */
-	private static List<SyllableKey> determineSyllables(String original, String replace) {
+	private static Pronunciation determineSyllables(String original, String replace) {
 		if (original == null || original.length() == 0) {
 			throw new IllegalArgumentException("Null or length zero original pronunciation");
 		}
 
 		if (replace == null || replace.length() == 0) {
-			return getKeyEncodeSyllables(getParsedSyllables(original));
+			return new Pronunciation(convertToSyllableKeys(getParsedSyllables(original)));
 		}
 
 		int rLen = replace.length();
@@ -107,7 +97,7 @@ public class PronunciationEntry {
 
 		if (!notFirst && !notLast) {
 			// entire alternative is the new pronunciation
-			return getKeyEncodeSyllables(getParsedSyllables(replace));
+			return new Pronunciation(convertToSyllableKeys(getParsedSyllables(replace)));
 		}
 		
 		if (notFirst && rLen >= 1) {
@@ -176,16 +166,26 @@ public class PronunciationEntry {
 		for (int i = 0; i < origSyl.size() - bestPosEnd - 1; i ++) 
 			output.addLast(SyllableHash.insert(origSyl.get(bestPosEnd+1+i)));
 
+		return new Pronunciation(output);
+	}
+	
+	private static List<SyllableKey> convertToSyllableKeys(List<Syllable> syllableList) {
+		List<SyllableKey> output = new ArrayList<SyllableKey>();
+		for (Syllable syllable : syllableList) {
+			output.add(SyllableHash.insert(syllable));
+		}
 		return output;
 	}
 
 	private static ArrayList<Syllable> getParsedSyllables(String aSyllables) {
 		ArrayList<Syllable> output = new ArrayList<Syllable>();
-		Matcher norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
-		Matcher st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
-		Matcher st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
+		Matcher norMat, st1Mat, st2Mat;
 
 		while( aSyllables.length() > 0 ) {
+			norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
+			st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
+			st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
+
 			if (norMat.matches()) { //  - stress pattern
 				String temp = norMat.group(1);
 				output.add(new Syllable(temp.replace("-", ""), false));
@@ -202,22 +202,18 @@ public class PronunciationEntry {
 				output.add(new Syllable(aSyllables, false));
 				break;
 			}
-
-			norMat = Pattern.compile(SYLLABLE_NORMAL_PATTERN, Pattern.DOTALL).matcher(aSyllables);
-			st1Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_1, Pattern.DOTALL).matcher(aSyllables);
-			st2Mat = Pattern.compile(SYLLABLE_STRESS_PATTERN_2, Pattern.DOTALL).matcher(aSyllables);
 		}
 
 		return output;
 	}
 	
-	private static List<SyllableKey> getKeyEncodeSyllables(List<Syllable> aSyllableList) {
-		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
-		for (Syllable syllable : aSyllableList) {
-			output.add(SyllableHash.insert(syllable));
-		}
-		return output;
-	}
+//	private static List<SyllableKey> getKeyEncodeSyllables(List<Syllable> aSyllableList) {
+//		LinkedList<SyllableKey> output = new LinkedList<SyllableKey>();
+//		for (Syllable syllable : aSyllableList) {
+//			output.add(SyllableHash.insert(syllable));
+//		}
+//		return output;
+//	}
 	
 	/**
 	 * Returns weighted edit distance heuristic between two strings

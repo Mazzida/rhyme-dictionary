@@ -1,5 +1,7 @@
 package dictionary.main;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -69,10 +71,13 @@ public class RhymeDictionaryCLI {
 
 	public static void respondStrictRhyme(String command) {
 		String aWord = command.substring(3);
-		Set<String> result = RhymeQueryHandler.getStrictRhymes(aWord);
+		Map<String, Set<String>> result = RhymeQueryHandler.getStrictRhymes(aWord);
 		if (result != null) {
-			for (String rhyme : result) {
-				System.out.println(rhyme);
+			for (String pronunciation : result.keySet()) {
+				System.out.println(pronunciation);
+				for (String rhyme : result.get(pronunciation)) {
+					System.out.println("\t" + rhyme);
+				}
 			}
 		} else {
 			System.out.println();
@@ -81,9 +86,11 @@ public class RhymeDictionaryCLI {
 	
 	private static void respondPronunciation(String command) {
 		String aWord = command.substring(3);
-		String pronunciation = RhymeQueryHandler.getPronunciation(aWord);
-		if (pronunciation != null) {
-			System.out.print(pronunciation);
+		Collection<String> pronunciationCollection = RhymeQueryHandler.getPronunciations(aWord);
+		if (pronunciationCollection != null) {
+			for (String pronunciation : pronunciationCollection) {
+				System.out.print(pronunciation);
+			}
 		} else {
 			System.err.println("word not found");
 		}

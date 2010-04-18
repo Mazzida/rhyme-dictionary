@@ -1,6 +1,6 @@
 package dictionary.tree;
 
-public class Syllable {
+public class Syllable implements Comparable<Syllable>{
 
 	@SuppressWarnings("unused")
 	private static final String VOWEL_REGEX = "[aäāâeəēěiīĭîoōŏôuûŭ]";
@@ -69,5 +69,9 @@ public class Syllable {
 	}
 
 	public static final Syllable NULL = new Syllable("", false);
+
+	public int compareTo(Syllable otherSyllable) {
+		return syllable.compareTo(otherSyllable.syllable);
+	}
 
 }

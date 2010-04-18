@@ -2,12 +2,14 @@ package dictionary.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 
@@ -46,35 +48,42 @@ public class RhymeTree {
 		return true;
 	}
 
-	public Set<String> getRhymes(String aWord) {
+	public Map<String, Set<String>> getRhymes(String aWord) {
 		LinkedList<RhymeTreeNode> nodeList;
-		TreeSet<String> output = new TreeSet<String>();
+		Map<String, Set<String>> output = new TreeMap<String, Set<String>>();
 		nodeList = wordPronunciation.get(aWord);
 		// that word is not in this list
 		if (nodeList == null) {
 			return null;
 		}
 		
-		for (RhymeTreeNode curNode : nodeList) {			
+		for (RhymeTreeNode curNode : nodeList) {
+			Pronunciation pronunciation = curNode.getPronunciation();
+			Set<String> rhymes = new TreeSet<String>();
+			output.put(pronunciation.toString(), rhymes);
+
 			while (curNode != root && curNode.parent != root) {
 				curNode = curNode.parent;
 			}
-			curNode.getAllWords(output);			
+			curNode.collectAllWords(rhymes);
 		}
-
 		return output;
 	}
 
-	public Set<String> getStrictRhymes(String aWord) {
+	public Map<String, Set<String>> getStrictRhymes(String aWord) {
 		LinkedList<RhymeTreeNode> nodeList;
-		TreeSet<String> output = new TreeSet<String>();
+		Map<String, Set<String>> output = new TreeMap<String, Set<String>>();
 		nodeList = wordPronunciation.get(aWord);
 		// that word is not in this list
 		if (nodeList == null) {
 			return null;
 		}
 
-		for (RhymeTreeNode curNode : nodeList) {			
+		for (RhymeTreeNode curNode : nodeList) {
+			Pronunciation pronunciation = curNode.getPronunciation();
+			Set<String> rhymes = new TreeSet<String>();
+			output.put(pronunciation.toString(), rhymes);
+
 			RhymeTreeNode lastStress = curNode;
 			while (curNode != root) {
 				if (curNode.isStressed()) {
@@ -85,7 +94,7 @@ public class RhymeTree {
 
 			for (RhymeTreeNode eligibleSibling : lastStress.getSimilarVowelAndTrailingSoundSiblings()) {
 				if (SyllableHash.get(eligibleSibling.syllableValue).isStressed()) {
-					eligibleSibling.getAllWords(output);
+					eligibleSibling.collectAllWords(rhymes);
 				}
 			}
 		}
@@ -93,38 +102,41 @@ public class RhymeTree {
 		return output;		
 	}
 
-	public String getPronunciation(String aWord) {
-		StringBuilder output = new StringBuilder();
+	public List<String> getPronunciations(String aWord) {
+		List<String> output = new ArrayList<String>();
 		LinkedList<RhymeTreeNode> nodeList;
 		nodeList = wordPronunciation.get(aWord);
+
+		Collections.sort(nodeList);
 		// that word is not in this list
 		if (nodeList == null) {
 			return null;
 		}
 
 		for (RhymeTreeNode curNode : nodeList) {
+			StringBuilder builder = new StringBuilder();
 			while (curNode != root) {
-				output.append(SyllableHash.get(curNode.syllableValue));
+				builder.append(SyllableHash.get(curNode.syllableValue));
 				curNode = curNode.parent;
 			}
 
 			// strip trailing delimiter if present
-			int delimIndex = output.lastIndexOf("-"); 
-			int length = output.length();
+			int delimIndex = builder.lastIndexOf("-"); 
+			int length = builder.length();
 			if (length > 0 && delimIndex == length-1) {
-				output.deleteCharAt(delimIndex);			
+				builder.deleteCharAt(delimIndex);			
 			}
-			output.append('\n');
+			output.add(builder.toString());
 		}
 
-		return output.toString();
+		return output;
 	}
 	
 	public String toString() {
 		return root.toRecursiveString("");
 	}
 
-	private class RhymeTreeNode {
+	private class RhymeTreeNode implements Comparable<RhymeTreeNode> {
 		private RhymeTreeNode parent;
 		private SyllableKey syllableValue;
 		private ArrayList<RhymeTreeNode> childList;
@@ -146,13 +158,13 @@ public class RhymeTree {
 			return isTerminating;
 		}
 
-		private void getAllWords(Collection<String> aBucket) {
+		private void collectAllWords(Collection<String> aBucket) {
 			if (isTerminating != null)
 				aBucket.addAll(isTerminating);
 
 			if (childList != null) {
 				for (RhymeTreeNode node : childList) {
-					node.getAllWords(aBucket);
+					node.collectAllWords(aBucket);
 				}
 			}
 		}
@@ -211,9 +223,23 @@ public class RhymeTree {
 			return output;
 		}
 
+		private Pronunciation getPronunciation() {
+			List<SyllableKey> syllableKeyList = new LinkedList<SyllableKey>();
+			RhymeTreeNode nodeHandle = this;
+			while (nodeHandle != root) {
+				syllableKeyList.add(nodeHandle.syllableValue);
+				nodeHandle = nodeHandle.parent;
+			}
+
+			return new Pronunciation(syllableKeyList);
+		}
+
 		private boolean isStressed() {
 			return SyllableHash.get(syllableValue).isStressed();
 		}
-	}
 
+		public int compareTo(final RhymeTreeNode node) {
+			return SyllableHash.get(syllableValue).compareTo(SyllableHash.get(node.syllableValue));
+		}
+	}
 }
