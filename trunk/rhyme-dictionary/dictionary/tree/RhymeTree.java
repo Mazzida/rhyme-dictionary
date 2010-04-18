@@ -1,5 +1,6 @@
 package dictionary.tree;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 
 public class RhymeTree {
@@ -127,8 +127,8 @@ public class RhymeTree {
 	private class RhymeTreeNode {
 		private RhymeTreeNode parent;
 		private SyllableKey syllableValue;
-		private Vector<RhymeTreeNode> childList;
-		private Vector<String> isTerminating;
+		private ArrayList<RhymeTreeNode> childList;
+		private ArrayList<String> isTerminating;
 
 		public RhymeTreeNode(RhymeTreeNode aParent, SyllableKey aKey) {
 			parent = aParent;
@@ -137,7 +137,7 @@ public class RhymeTree {
 		
 		private void setEndNode(String setTermination) {
 			if (isTerminating == null) {
-				isTerminating = new Vector<String>();
+				isTerminating = new ArrayList<String>();
 			}
 			isTerminating.add(setTermination);
 		}
@@ -160,7 +160,7 @@ public class RhymeTree {
 		private RhymeTreeNode getChild(SyllableKey aKey) {
 			if (childList == null) {
 				RhymeTreeNode output = new RhymeTreeNode(this, aKey);
-				childList = new Vector<RhymeTreeNode>();
+				childList = new ArrayList<RhymeTreeNode>();
 				childList.add(output);
 				return output;
 			} else {
