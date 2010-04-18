@@ -1,5 +1,7 @@
 package dictionary.main;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import dictionary.tree.RhymeTree;
@@ -22,7 +24,7 @@ public class RhymeQueryHandler {
 	 * Returns the set of rhyming words, or null if the
 	 * argument word was not found in the dataset
 	 */
-	public static Set<String> getRhymes(String aWord) {
+	public static Map<String, Set<String>> getRhymes(String aWord) {
 		return singleton.trie.getRhymes(aWord);
 	}
 
@@ -32,12 +34,12 @@ public class RhymeQueryHandler {
 	 * occurs when words match in both final stressed vowel sounds
 	 * and all subsequent syllables.
 	 */
-	public static Set<String> getStrictRhymes(String aWord) {
+	public static Map<String, Set<String>> getStrictRhymes(String aWord) {
 		return singleton.trie.getStrictRhymes(aWord);
 	}
 	
-	public static String getPronunciation(String aWord) {
-		return singleton.trie.getPronunciation(aWord);
+	public static Collection<String> getPronunciations(String aWord) {
+		return singleton.trie.getPronunciations(aWord);
 	}
 	
 	public static void touch() {
